@@ -128,12 +128,14 @@
                   <td>{$v.name}</td>
                   <td class="hidden-480"><a href="{$v.url}" target="_blank">{$v.url}</a></td>
                   <td class="ace-thumbnails hidden-480" style="background:#c9c6cc;">
+                    {notempty name="$v.image"}
                     <li><a href="{$v.image}" data-rel="colorbox">
                       <img width="80" height="80" alt="150x150" src="{$v.image}"/>
                       <div class="text">
                         <div class="inner">点击放大</div>
                       </div>
                     </a></li>
+                    {/notempty}
                   </td>
                   <td>
                     <label>

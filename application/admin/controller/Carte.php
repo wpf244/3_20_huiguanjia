@@ -5,9 +5,9 @@ class Carte extends BaseAdmin
 {
     public function lister()
     {
-        $list=db('carte')->where("pid=0")->order("c_sort asc")->select();
+        $list=db('carte')->where("pid=0")->order(["c_sort asc","cid asc"])->select();
         foreach($list as $k => $v){
-            $list[$k]['lists']=db("carte")->where("pid={$v['cid']}")->order("c_sort asc")->select();
+            $list[$k]['lists']=db("carte")->where("pid={$v['cid']}")->order(["c_sort asc","cid asc"])->select();
         }
         $this->assign("list",$list);
         return  $this->fetch();

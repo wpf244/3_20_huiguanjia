@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+{include file="public:header"}
+
+<body class="no-skin">
+<!--头部-->
+{include file="public:nav"}
+
+<div class="main-container ace-save-state" id="main-container">
+  <!--菜单-->
+  <script type="text/javascript">
+  try{ace.settings.loadState('main-container')}catch(e){}
+</script>
+
+{include file="public:left"}
+
+  <div class="main-content">
+    <div class="main-content-inner">
+      <div class="breadcrumbs ace-save-state" id="breadcrumbs">
+        <ul class="breadcrumb">
+          <li>
+            <i class="ace-icon fa fa-home home-icon"></i>
+            <a href="{:url('Index/index')}">首页</a>
+          </li>
+          <li class="active">已联系列表</li>
+        </ul><!-- /.breadcrumb -->
+
+      </div>
+
+      <div class="page-content">
+
+        {include file="public:set"}
+
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="col-sm-10 col-sm-offset-1">
+              <div class="page-header">
+               
+              </div>
+              <table class="table table-bordered table-hover">
+                <thead>
+                <tr>
+               
+                  <th>ID</th>
+                  <th>会议类型</th>
+                  <th>会议时长</th>
+                  <th>会议时间</th>
+                  <th>会议人数</th>
+                  <th>会议预算</th>
+                  <th>会议需求</th>
+                  <th>会议城市</th>
+                  <th>联系电话</th>
+                  <th>备注</th>
+                  <th>提交时间</th>
+                  <th style="border-right:#ddd solid 1px;">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+               
+                {volist name="list" id="v"}
+                <tr>
+               
+                  
+                  <td><span class="badge badge-grey">{$v.id}</span></td>
+                  <td>{$v.type}</td>
+                  <td>{$v.times}</td>
+                  <td>{$v.dates}</td>
+                  <td>{$v.number}</td>
+                  <td>{$v.money}</td>
+                  <td>{$v.ment}</td>
+                  <td>{$v.city}</td>
+                  <td>{$v.phone}</td>
+                  <td>{$v.content}</td>
+                  <td>{$v.time|date="Y-m-d H:i:s",###}</td>
+                  <td>
+                 
+                    <button class="btn btn-xs btn-danger" type="button" onclick="dels({$v['id']})" title="删除">
+                      删除
+                      </button>
+                  </td>
+                </tr>
+                {/volist}
+                </tbody>
+             
+              </table>
+              <div class="text-center">
+                {$page}
+              </div>
+            </div>
+            <!-- PAGE CONTENT BEGINS -->
+
+            <!-- PAGE CONTENT ENDS -->
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+      </div><!-- /.page-content -->
+    </div>
+  </div><!-- /.main-content -->
+  
+
+  {include file="public:footer"}
+
+<a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
+  <i class="ace-icon fa fa-angle-double-up icon-only bigger-110"></i>
+</a>
+</div><!-- /.main-container -->
+
+
+
+<script>
+  jQuery(function($) {
+    $('[data-rel=tooltip]').tooltip();
+
+    $( "#hide-option" ).tooltip({
+      hide: {
+        effect: "explode",
+        delay: 250
+      }
+    });
+
+  })
+</script>
+<script type="text/javascript">
+  function dels(id){
+    layer.confirm('你确定删除吗？', {icon: 3}, function(index){
+      layer.close(index);
+      window.location.href="__URL__/deletes/id/"+id;
+    });
+    }
+  </script>
+
+<script type="text/javascript">
+  function change(id){
+    layer.confirm('你确定已联系吗？', {icon: 3}, function(index){
+      layer.close(index);
+      window.location.href="__URL__/change/id/"+id;
+    });
+    }
+  </script>
+
+  <script>
+    $(function () {
+      //添加-模态框
+      $("#save-btn").on(ace.click_event,function () {
+        //获取form表单,执行ajaxSubmit提交
+        var name = $("#name").val();
+    	  if($.trim(name) == ''){
+        	  layer.alert("请输入会议时长！",{icon:5});
+        	  return false;
+          }
+    	var id = $("#id").val();
+        $("#add").ajaxSubmit({
+          url: "{:url('Demand/save_lister')}",
+          type: 'post',
+          data:{name:name,id:id},
+          datatype:"text",
+          success: function(res){
+            //后台返回状态,保存成功
+            if(res.code == 1){
+              success(res.msg);
+              setTimeout('location.reload()',2000)
+              
+            }else{
+              error(res.msg);
+              setTimeout('location.reload()',2000)
+            }
+          }
+        })
+      })
+    });
+
+    //向模态框写入数据
+    function readData(data) {
+    	$(".modal-title").text('修改');
+      $("#id").val(data.id);
+      $("#name").val(data.name);    
+      $('#add').modal('show');
+    }
+    $("#change").click(function(){
+    	$("#sortForm").submit();
+    })
+    function gs() {
+      console.log(1)
+    }
+  //bs模态框关闭事件回调函数
+    $('#add').on('hidden.bs.modal', function (e) {
+  // do something...
+  $('#modal-form').get(0).reset();
+  $(".modal-title").text('添加');
+	})
+
+  </script>
+</body>
+</html>

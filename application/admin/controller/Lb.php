@@ -58,6 +58,7 @@ class Lb extends BaseAdmin{
            $re=db('lb')->where("id=$id")->find();
            if(!is_string(input('image'))){
                $data['image']=uploads("image");
+               deleteImg($re['image']);
            }
            
            if(input('status')){
