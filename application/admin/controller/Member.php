@@ -2,11 +2,13 @@
 namespace app\admin\controller;
 
 use think\Request;
+use Think\Db;
+
 class Member extends BaseAdmin
 {
     public function lister()
     {
-        $list=db("user")->order("uid desc")->paginate(10);
+        $list=db("user")->where(['status'=>1,'is_delete'=>0])->order("uid desc")->paginate(10);
         
         $res = [];
         foreach($list as $v){
@@ -29,12 +31,12 @@ class Member extends BaseAdmin
         $uid = Request::instance()->param('uid', 0);
         $user = db('user')->where('uid', $uid)->find();
         if($type == 'up'){
-            if($user['level'] == 2){
+            if($user['level'] == 3){
                 return array('status'=>-1, 'data'=>array(), 'msg'=>'已经是最高等级了');
             }
             $res = db('user')->where('uid', $uid)->setInc('level');
         }elseif($type == 'down'){
-            if($user['level'] == 0){
+            if($user['level'] == 1){
                 return array('status'=>-1, 'data'=>array(), 'msg'=>'已经是最低等级了');
             }
             $res = db('user')->where('uid', $uid)->setDec('level');
@@ -42,11 +44,11 @@ class Member extends BaseAdmin
         if($res){
             $level = db('user')->where('uid', $uid)->value('level');
             if($level == 1){
-                $level_name = '一级合伙人';
-            }elseif($level == 2){
-                $level_name = '二级合伙人';
-            }else{
                 $level_name = '普通会员';
+            }elseif($level == 2){
+                $level_name = '销售经理';
+            }else{
+                $level_name = '入驻酒店';
             }
             return array('status'=>1, 'data'=>array('level_name'=>$level_name), 'msg'=>'操作成功');
         }else{
@@ -75,7 +77,7 @@ class Member extends BaseAdmin
     }
 
     /**
-     * 修改股数
+     * 修改佣金
      *
      * @return void
      */
@@ -86,8 +88,28 @@ class Member extends BaseAdmin
             echo '0';
             return;
         }
+        $user=db("user")->where("uid",$id)->find();
+        $old_money=$user['money'];
+
+
+        $new_money=$money-$old_money;
+        if($new_money >= 0){
+            $data['uid']=$id;
+            $data['money']=abs($new_money);
+            $data['type']=1;
+            $data['oper']=db("admin")->where("id",session('uid'))->find()['username'];
+            $data['time']=time();
+        }else{
+            $data['uid']=$id;
+            $data['money']=abs($new_money);
+            $data['type']=0;
+            $data['oper']=db("admin")->where("id",session('uid'))->find()['username'];
+            $data['time']=time();
+        }
+        
         $res = db('user')->where('uid', $id)->setField('money', $money);
         if($res){
+            db("money_log")->insert($data);
             echo "1";
         }else{
             echo "0";
@@ -102,7 +124,7 @@ class Member extends BaseAdmin
     public function money_log(){
         $id = Request::instance()->param('id', 0);
         $user = db('user')->where('uid', $id)->find();
-        $list = db("money_log")->where('u_id', $id)->paginate(10);
+        $list = db("money_log")->where('uid', $id)->paginate(10);
         $this->assign('list', $list);
         $this->assign('user', $user);
         return $this->fetch();
@@ -179,71 +201,18 @@ class Member extends BaseAdmin
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-    public function change()
-    {
-        $id=input('id');
-        $re=db("user")->where("uid=$id")->find();
-        if($re){
-           if($re['u_status'] == 0){
-            $data['u_status']=1;
-            $data['u_jtime']=\time();
-
-            $res=\db("user")->where("uid=$id")->update($data);
-
-            $datas['u_id']=0;
-            $datas['p_id']=$id;
-            $datas['time']=time();
-            db("user_log")->insert($datas);
-            echo '1';
-           }else{
-            echo '2'; 
-           } 
-            
-            
-        }else{
-            echo '0';
-        }
-    }
-    public function changes()
-    {
-        $id=input('id');
-        $re=db("user")->where("uid=$id")->find();
-        if($re){
-           if($re['u_status'] == 1){
-            $data['u_status']=0;
-            $data['u_jtime']="";
-
-            $res=\db("user")->where("uid=$id")->update($data);
-
-            echo '1';
-           }else{
-            echo '2'; 
-           } 
-            
-            
-        }else{
-            echo '0';
-        }
-    }
+    /**
+    * 删除
+    *
+    * @return void
+    */
     public function delete()
     {
         $id=input('id');
         $re=db("user")->where("uid=$id")->find();
         if($re){
             
-            $del=db("user")->where("uid=$id")->delete();
+            $del=db("user")->where("uid=$id")->setField("is_delete",-1);
             if($del){
                 
                 echo '0';
@@ -254,112 +223,176 @@ class Member extends BaseAdmin
             echo '2';
         }
     }
-    public function modifys()
+    /**
+    * 升级申请列表
+    *
+    * @return void
+    */
+    public function apply()
     {
-        $data=db("user")->field("u_name")->select();
-        $arr=array();
-        foreach($data as $v){
-            $arr[]=$v['u_name'];
-        }
-        $this->assign("data",json_encode($arr,JSON_UNESCAPED_UNICODE));
-        
-        $id=input('id');
-        $re=db("user")->where("uid=$id")->find();
-        if($re){
-            $this->assign("re",$re);
-            return $this->fetch();
+        $status=input("status");
+        if($status){
+            $map['u_status']=['eq',$status];
         }else{
-            $this->redirect('lister');
+            $status=0;
         }
+        $map['type']=['eq',0];
+        $list=db("user_apply")->alias("a")->field("a.*,b.nickname")->where($map)->join("user b","a.u_id=b.uid")->order("id desc")->paginate(10);
+        $this->assign("list",$list);
 
-    }
-    public function add()
-    {
-        $data=db("user")->field("u_name")->select();
-        $arr=array();
-        foreach($data as $v){
-            $arr[]=$v['u_name'];
-        }
-        $this->assign("data",json_encode($arr,JSON_UNESCAPED_UNICODE));
+        $page=$list->render();
+        $this->assign("page",$page);
+
+        $this->assign("status",$status);
+
         return $this->fetch();
     }
-    public function save()
+    /**
+    * 通过审核
+    *
+    * @return void
+    */
+    public function change()
     {
-        $pid=input('pid');
-        $data=input('post.');
-        if(empty($pid)){
-            $data['pid']=0;
-        }else{
-            $re=db("user")->where("u_name='$pid'")->find();
-            if($re){
-                
-                $data['pid']=$re['uid'];
-              
-            }else{
-                $this->error("推荐人不存在",url('lister'));exit;
-            }
-        }
-        if(\input('u_status')){
-            $data['u_status']=1;
-            $data['u_jtime']=time();
-        }
-        $data['u_pwd']=md5(input('u_pwd'));
-        $data['u_pwds']=md5(\input('u_pwds'));
-        $data['u_ztime']=time();
-        $code=\time();
-        $data['u_code']=mb_substr($code,-6,6);
-        
-        $rea=db("user")->insert($data);
-        if($rea){
-            $this->success("添加成功",url('lister'));
-        }else{
-            $this->error("系统繁忙，请稍后再试",url('lister'));
-        }
-        
-    }
-    public function usave()
-    {
-        $uid=input('uid');
-        $re=db("user")->where("uid=$uid")->find();
-        if($re){
-            $pid=input('pid');
-            if(empty($pid)){
-                $data['pid']=0;
-            }else{
-                $re=db("user")->where("u_name='$pid'")->find();
-                if($re){
-                    $data['pid']=$re['uid'];  
-                }else{
-                    $this->error("推荐人不存在",url('lister'));exit;
+        $id=input("id");
+        $re=db("user_apply")->where("id",$id)->find();
+        if($re){ 
+           if($re['u_status'] == 0){
+            $uid=$re['u_id'];
+            $level=$re['u_level'];
+            // 启动事务
+                Db::startTrans();
+                try{
+                   db("user_apply")->where("id",$id)->setField("u_status",1);
+                   db("user")->where("uid",$uid)->setField("level",$level);
+                    // 提交事务
+                    Db::commit();   
+                   
+                } catch (\Exception $e) {
+                    // 回滚事务
+                    Db::rollback();
+                    $this->redirect('apply');
                 }
-            }
-            if(!empty('u_pwd')){
-                $data['u_pwd']=md5(input('u_pwd'));
-            }
-            if(!empty('u_pwds')){
-                $data['u_pwds']=md5(input('u_pwds'));
-            }
-            $data['u_name']=input('u_name');
-            $data['level']=input('level');
-            $data['u_phone']=input('u_phone');
-            $data['u_wx']=input('u_wx');
-            $data['u_alipay']=input('u_alipay');
-            if(\input('u_status')){
-                $data['u_status']=1;
-            }else{
-                $data['u_status']=$re['u_status'];
-            }
-            $res=db("user")->where("uid=$uid")->update($data);
-            if($res){
-                $this->success("修改成功",url('lister'));
-            }else{
-                $this->error("修改失败",url('lister'));
-            }
-
-        }else{
-            $this->error("系统繁忙，请稍后再试",url('lister'));
+           
+                $this->redirect('apply');
+            
+           }else{
+            $this->redirect('apply');
+           }
+        }else{ 
+            $this->redirect('apply');
         }
     }
+    /**
+    * 驳回
+    *
+    * @return void
+    */
+    public function bo()
+    {
+        $id=input("id");
+        $re=db("user_apply")->where("id",$id)->find();
+        if($re){ 
+           if($re['u_status'] == 0){
+          
+            db("user_apply")->where("id",$id)->setField("u_status",2);
+             
+            $this->redirect('apply');
+            
+           }else{
+            $this->redirect('apply');
+           }
+        }else{ 
+            $this->redirect('apply');
+        }
+    }
+    /**
+    * 入住酒店申请列表
+    *
+    * @return void
+    */
+    public function hotel_apply()
+    {
+        $status=input("status");
+        if($status){
+            $map['u_status']=['eq',$status];
+        }else{
+            $status=0;
+        }
+        $map['type']=['eq',1];
+        $list=db("user_apply")->alias("a")->field("a.*,b.nickname")->where($map)->join("user b","a.u_id=b.uid")->order("id desc")->paginate(10);
+        $this->assign("list",$list);
+
+        $page=$list->render();
+        $this->assign("page",$page);
+
+        $this->assign("status",$status);
+
+        return $this->fetch();
+    }
+    /**
+    * 通过审核
+    *
+    * @return void
+    */
+    public function changes()
+    {
+        $id=input("id");
+        $re=db("user_apply")->where("id",$id)->find();
+        if($re){ 
+           if($re['u_status'] == 0){
+            $uid=$re['u_id'];
+            $level=$re['u_level'];
+            // 启动事务
+                Db::startTrans();
+                try{
+                   db("user_apply")->where("id",$id)->setField("u_status",1);
+                   db("user")->where("uid",$uid)->setField("level",$level);
+                    // 提交事务
+                    Db::commit();   
+                   
+                } catch (\Exception $e) {
+                    // 回滚事务
+                    Db::rollback();
+                    $this->redirect('hotel_apply');
+                }
+           
+                $this->redirect('hotel_apply');
+            
+           }else{
+            $this->redirect('hotel_apply');
+           }
+        }else{ 
+            $this->redirect('hotel_apply');
+        }
+    }
+     /**
+    * 驳回
+    *
+    * @return void
+    */
+    public function bos()
+    {
+        $id=input("id");
+        $re=db("user_apply")->where("id",$id)->find();
+        if($re){ 
+           if($re['u_status'] == 0){
+               $data['u_status']=2;
+               $data['rebut']=input("rebut");
+          
+            db("user_apply")->where("id",$id)->update($data);
+             
+            echo '1';
+            
+           }else{
+            echo '0';
+           }
+        }else{ 
+            echo '2';
+        }
+    }
+   
+   
 
 
 

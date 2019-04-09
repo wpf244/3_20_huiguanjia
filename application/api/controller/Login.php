@@ -160,11 +160,11 @@ class Login extends BaseApi
                                     'data'=>''
                                 ]; 
                                 }else{
-                                $arr=[
-                                    'error_code'=>4,
-                                    'msg'=>'注册失败',
-                                    'data'=>''
-                                ]; 
+                                    $arr=[
+                                        'error_code'=>4,
+                                        'msg'=>'注册失败',
+                                        'data'=>''
+                                    ]; 
                                 }
                                 
                             }else{

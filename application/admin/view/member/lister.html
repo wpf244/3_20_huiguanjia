@@ -48,8 +48,7 @@
                   <th class="hidden-480">会员名</th>
                   <th class="hidden-480">手机号码</th>
                   <th class="hidden-480">头像</th>
-                  <th class="hidden-480">股数</th>
-                  <th class="hidden-480">奖励金</th>
+                  <th class="hidden-480">佣金</th>
                   <th class="hidden-480">等级</th>
                   <th class="hidden-480">上级会员</th>
                   <th class="hidden-480">注册时间</th>
@@ -71,29 +70,24 @@
                       </div>
                     </a></li>
                   </td>
-                  <td>{$v.money|intval}<i class="ace-icon fa fa-pencil bigger-120" onclick="change_money({$v.uid})"></i></td>
-                  <td class="hidden-480">{$v.bonus|intval}<i class="ace-icon fa fa-pencil bigger-120" onclick="change_bonus({$v.uid})"></i></td>
+                  <td>{$v.money}<i class="ace-icon fa fa-pencil bigger-120" onclick="change_money({$v.uid})"></i></td>
+               
                   <td class="hidden-480">
                       <i class="ace-icon fa fa-chevron-circle-down bigger-120" onclick="level_change('down', {$v.uid})"></i>
                       <span id="level{$v.uid}">
-                          {if condition="$v.level == 1"}一级合伙人{elseif condition="$v.level == 2"}二级合伙人{else /}普通会员{/if}
+                          {if condition="$v.level == 1"}普通会员{elseif condition="$v.level == 2"}销售经理{else /}入驻酒店{/if}
                       </span>
                       <i class="ace-icon fa fa-chevron-circle-up bigger-120" onclick="level_change('up', {$v.uid})"></i>
                   </td>
                   <td class="hidden-480">{$v.pid_user}</td>
                   <td class="hidden-480">{$v.time|date="Y-m-d H:i:s",###}</td>
                   <td>
-                      <a class="btn btn-xs btn-info" href="{:url('Member/money_log',array('id'=>$v['uid']))}" title="股权日志">
-                        股权日志
-                      </a>
-                      <a class="btn btn-xs btn-info" href="{:url('Member/bonus_log',array('id'=>$v['uid']))}" title="奖励金日志">
-                        奖励金日志
-                      </a>
-                    <!-- <a class="btn btn-xs btn-info" href="{:url('Member/modifys',array('id'=>$v['uid']))}" title="修改">
-                      <i class="ace-icon fa fa-pencil bigger-120"></i>
-                    </a>-->
+                   
+                    <a class="btn btn-xs btn-info" href="{:url('Member/money_log',array('id'=>$v['uid']))}" title="修改">
+                      佣金日志
+                    </a>
                     <button class="btn btn-xs btn-danger" type="button" onclick="dels({$v.uid})" title="删除">
-                      <i class="ace-icon fa fa-trash-o bigger-120"></i>
+                      删除
                     </button> 
                   </td>
                 </tr>
@@ -147,12 +141,12 @@
               success:function(re){
                 if(re == 2 || re==1){
                     layer.msg("系统繁忙请稍后再试");
-                    location.href="{:url('Member/lister')}";
+                    setTimeout('location.reload()',2000);
                 }
                 
                 if(re == 0){
                   layer.msg("删除成功")
-                  location.href="{:url('Member/lister')}";
+                  setTimeout('location.reload()',2000);
                 }
               }
           })
@@ -174,49 +168,14 @@
       })
     }
 
-    function change_bonus(id) {
-      layer.prompt({
-        title: '请输入调整后的奖励金',
-        formType: 3
-      }, function (text, index) {
-        var n = /^[1-9]\d*$/;
-        if (!n.test(text)) {
-          layer.alert('请输入正确数值的奖励金');
-          return false;
-        } else {
-          $.ajax({
-            type: "post",
-            url: "__URL__/change_bonus",
-            data: {
-              id: id,
-              bonus: text
-            },
-            datatype: "text",
-            success: function (re) {
-              if (re == 1) {
-                layer.close(index);
-                layer.msg("调整成功");
-                location.reload();
-              } else {
-                layer.close(index);
-                layer.msg("系统繁忙，请稍后再试");
-                location.reload();
-              }
-
-            }
-          })
-        }
-      })
-    }
-
     function change_money(id) {
       layer.prompt({
-        title: '请输入调整后的股数',
+        title: '请输入调整后的佣金',
         formType: 3
       }, function (text, index) {
         var n = /^[1-9]\d*$/;
         if (!n.test(text)) {
-          layer.alert('请输入正确数值的奖励金');
+          layer.alert('请输入正确数值的佣金');
           return false;
         } else {
           $.ajax({
@@ -231,11 +190,11 @@
               if (re == 1) {
                 layer.close(index);
                 layer.msg("调整成功");
-                location.reload();
+               location.reload();
               } else {
                 layer.close(index);
                 layer.msg("系统繁忙，请稍后再试");
-                location.reload();
+               location.reload();
               }
 
             }
@@ -243,6 +202,8 @@
         }
       })
     }
+
+   
 		</script>
 <script>
 function change(id,status){
