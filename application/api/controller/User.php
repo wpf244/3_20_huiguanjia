@@ -134,5 +134,53 @@ class User extends BaseHome
         ];
         echo \json_encode($arr);
     }
+    /**
+    * 我的顾问
+    *
+    * @return void
+    */
+    public function problem()
+    {
+        $res=db("lb")->field("id,name")->where(["fid"=>6,"status"=>1])->order(["sort asc","id desc"])->select();
+        if($res){
+            $arr=[
+                'error_code'=>0,
+                'msg'=>"获取成功",
+                'data'=>$res
+            ]; 
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'msg'=>"暂无数据",
+                'data'=>[]
+            ]; 
+        }
+        echo \json_encode($arr);
+    }
+    /**
+    * 问题详情
+    *
+    * @return void
+    */
+    public function problem_detail()
+    {
+        $id=input("id");
+        $re=db("lb")->field("id,name,desc")->where("id",$id)->find();
+        if($re){
+            $arr=[
+                'error_code'=>0,
+                'msg'=>"获取成功",
+                'data'=>$re
+            ]; 
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'msg'=>"暂无数据",
+                'data'=>[]
+            ]; 
+        }
+        echo \json_encode($arr);
+
+    }
 
 }

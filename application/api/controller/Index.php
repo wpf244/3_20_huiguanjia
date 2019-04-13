@@ -22,6 +22,24 @@ class Index extends BaseApi
             $ensure[$ke]['image']=$url.$ve['image'];
         }
 
+        //举办过的会议
+        $meeting=db("meeting")->field("id,name,company,hotel,image")->where(["is_delete"=>0])->order(['sort asc','id desc'])->select();
+        foreach($meeting as $km => $vm){
+            $meeting[$km]['image']=$url.$vm['image'];
+        }
+
+        //热门会议酒店
+        $hot=db("hotel")->field("id,name,addr,image")->where(["is_delete"=>0,'up'=>1,'status'=>1])->order(['sort asc','id desc'])->select();
+        foreach($hot as $kh => $vh){
+            $hot[$kh]['image']=$url.$vh['image'];
+        }
+
+        //精选会议酒店
+        $choice=db("hotel")->field("id,name,addr,image,type,area")->where(["is_delete"=>0,'up'=>1,'statu'=>1])->order(['sort asc','id desc'])->select();
+        foreach($choice as $kc => $vc){
+            $choice[$kc]['image']=$url.$vc['image'];
+        }
+
         $arr=[
             'error_code'=>0,
             'msg'=>'获取成功',
@@ -29,6 +47,10 @@ class Index extends BaseApi
                 'lb'=>$lb,
                 'demand'=>$demand,
                 'ensure'=>$ensure,
+                'meeting'=>$meeting,
+                'hot'=>$hot,
+                'choice'=>$choice
+
             ]
         ];
     
@@ -94,6 +116,7 @@ class Index extends BaseApi
         }
         echo \json_encode($arr);
     }
+
 
 
 
