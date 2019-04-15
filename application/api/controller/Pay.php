@@ -4,6 +4,7 @@ namespace app\api\controller;
 use think\Controller;
 use think\Loader;
 use think\Request;
+use app\admin\controller\Share;
 
 Loader::import('WxPay.WxPay', EXTEND_PATH, '.Api.php');
 Loader::import('WxPay.WxPay', EXTEND_PATH, '.JsApiPay.php');
@@ -19,9 +20,13 @@ class Pay extends Controller
         \var_dump($results);exit;
         $openid=$results['openid'];
         return $openid;
+
+        
     }
     public function pays()
     {
+        $data=db("payment")->where("id",1)->find();
+       
         $did=\input('did');
         $uid=Request::instance()->header('uid');
         $user=db("user")->where("uid=$uid")->find();
@@ -29,14 +34,14 @@ class Pay extends Controller
        $openid=$user['openid'];
      //   $openid="oZwh45FZmYEuMXJoB04m9-bBAn4s";
      //   \var_dump($openid);exit;
-        $red=db("car_dd")->where("did=$did")->find();
+        $red=db("order")->where("id=$did")->find();
         $order=$red['code'];
-        $money=($red['zprice']*100);
-        $gname=$red['g_name'];
+        $money=($red['price']*100);
+        $name=$red['room'];
         
         
         $input = new \WxPayUnifiedOrder();
-        $input->SetBody("商品");
+        $input->SetBody("$name");
         $input->SetOut_trade_no("$order");
         $input->SetTotal_fee("$money");
         $input->SetNotify_url("https://weitenong.dd371.com/Api/Pay/notify/");
@@ -46,10 +51,10 @@ class Pay extends Controller
         //     由小程序端传给服务端
         $input->SetOpenid($openid);
         //     向微信统一下单，并返回order，它是一个array数组
-        $order = \WxPayApi::unifiedOrder($input);
+        $order = \WxPayApi::unifiedOrder($input,$data);
         //     json化返回给小程序端
         $tools=new \JsApiPay();
-        $jsApiParameters = $tools->GetJsApiParameters($order);
+        $jsApiParameters = $tools->GetJsApiParameters($order,$data);
         
 //         $arr=[
 //             'error_code'=>0,
@@ -73,28 +78,23 @@ class Pay extends Controller
             if($result['return_code'] == 'SUCCESS'){
                 //进行改变订单状态等操作。。。。
                 $order_code= $result['out_trade_no'];
-                $re=db("car_dd")->where("code='$order_code'")->find();
-                $id=$re['did'];
+                $re=db("order")->where("code='$order_code'")->find();
+                $id=$re['id'];
                 if($re['status'] == 0){
                     $data['fu_time']=time();
                     $data['status']=1;
-                    $changestatus=db("car_dd")->where("did=$id")->update($data);
+                    $changestatus=db("car_dd")->where("id=$id")->update($data);
                     if($changestatus){
-                        $pay = $re['pay'];
-                        $res = explode(",",$pay);
-                        foreach($res as $v){
-                            $dd = db("car_dd")->where("code='$v'")->find();
-                            $uid = $dd['uid'];
-                            $gid = $dd['gid'];
-                            $did = $dd['did'];
-                            $num = $dd['num'];
-                            $re_d = db("car_dd")->where("did=$did")->update($data);
-                            
-                            //增加销量
-                            $sales=db("goods")->where("gid=$gid")->setInc("g_sales",$num);
-    
-                        }
                         
+                        //是否开启分销
+                        $basic=db("basic")->where("id",1)->find();
+                        if($basic['status'] == 1){
+                            //分销返利
+                            $moneys=$re['price'];
+                            $uid=$re['uid'];
+                            $share=new Share();
+                            $share->share($uid,$moneys);
+                        }
                     }
                 }
                 

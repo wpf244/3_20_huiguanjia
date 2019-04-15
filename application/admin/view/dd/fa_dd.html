@@ -22,7 +22,7 @@
             <i class="ace-icon fa fa-home home-icon"></i>
             <a href="{:url('Index/index')}">首页</a>
           </li>
-          <li class="active">待发货列表</li>
+          <li class="active">已付款列表</li>
         </ul>
 
       </div>
@@ -42,6 +42,21 @@
 
                  <div class="col-sm-10 clearfix">
                   <form class="form-inline pull-right" action="__URL__/fa_dd" method="post">
+
+                    <div class="form-group">
+                      <div class="input-group">
+									<span class="input-group-addon">
+											<i class="fa fa-th-list"></i>
+										</span>
+                        <select class="form-control" name="hid">
+                          <option {if condition="$hid eq 0"}selected{/if} value="0">全部酒店</option>
+                          {volist name="hotel" id="v"}
+                          <option {if condition="$hid eq $v.id"}selected{/if} value="{$v.id}">{$v.name}</option>
+                          {/volist}
+                        </select>
+                      </div>
+                    </div>
+
                     <div class="form-group">
                     	<div class="input-daterange input-group">
 						<input type="text" class="form-control search-query" name="start" value="{$start}" placeholder="选择开始时间" />
@@ -58,16 +73,9 @@
                     <div class="input-group">
                         <input type="text" name="code"  class="form-control search-query" value="{$code}" placeholder="请输入订单号码">
                       </div>
-                      
-                      <div class="input-group">
-                        <input type="text" name="username"  class="form-control search-query" value="{$username}" placeholder="请输入收货人姓名">
-                      </div>
-                    
+          
                       <div class="input-group">
                         <input type="text" name="phone"  class="form-control search-query" value="{$phone}" placeholder="请输入收货人电话">
-                      </div>
-                      <div class="input-group">
-                        <input type="text" name="addr" class="form-control search-query" value="{$addr}" placeholder="请输入收货人地址">
                         <span class="input-group-btn">
 										<button type="submit" class="btn btn-info btn-sm ajax-search-form">
 											<span class="ace-icon fa fa-search icon-on-right bigger-120"></span> 搜索
@@ -84,45 +92,51 @@
                 <tr>
                  
                   <th>ID</th>
+                
                   <th>订单号</th>
-                  <th>订单总金额</th>
+                  <th>订单金额</th>
+                  <th>酒店名称</th>
+                  <th>房间名称</th>
+                  <th>房间类型</th>
+                  <th>会议时间</th>
+                  <th>会议人数</th>
+                  <th>会议需求</th>
+                  <th>联系电话</th>
                   <th>下单时间</th>
-                  <th>支付方式</th>
-                  <th>收货人信息</th>
-                  <th>订单备注</th>
+                  <th>订单状态</th>
                   <th style="border-right:#ddd solid 1px;">操作</th>
                 </tr>
                 </thead>
                 <tbody>
                 {volist name="list" id="v"}
                 <tr class="ace-thumbnails">
-                  <td><span class="badge badge-grey">{$v.did}</span></td>
+                  <td><span class="badge badge-grey">{$v.id}</span></td>
                   <td>{$v.code}</td>
-                  <td>{$v.zprice}</td>
-                 
+                  <td>{$v.price}</td>
+                  <td>{$v.hotel}</td>
+                  <td>{$v.room}</td>
+                  <td>{$v.room_type}</td>
+                  <td>{$v.dates}</td>
+                  <td>{$v.number}</td>
+                  <td>{$v.ment}</td>
+                  <td>{$v.phone}</td>
+                  
                   <td>{$v.time|date="Y-m-d H:i:s",###}</td>
                   <td>
-                      {if condition="$v.pay_type eq 0"}微信支付 {else /}股金兑换{/if}
-  
-                    </td>
-                  <th>
-                                                         收货人姓名：{$v.username}<br>
-                                                         收货人电话：{$v.phone}<br>
-                                                         收货人地址：{$v.addr}{$v.addrs}<br>
-                  </th>
-                  <td>{$v.content}</td>
-                  <td>
-                    <a class="btn btn-xs btn-info" href="{:url('detail',array('id'=>$v['did']))}">
-                      订单详情
-                    </a>
-                  <button class="btn btn-xs btn-success" type="button" onclick="dels({$v.did})">
-                      点击发货
-                    </button> 
-                    
+                    {if condition="$v.status eq 1"}已付款{/if}
+                    {if condition="$v.status eq 2"}待评价{/if}
+                    {if condition="$v.status eq 3"}已完成{/if}
+
                   </td>
+                  <td>
+                    {if condition="$v.status eq 1"} 
+                  <button class="btn btn-xs btn-success" type="button" onclick="change({$v.id})">
+                      确认完成
+                    </button> 
+                  {/if}
+                  </td>
+               
                 </tr>
-    
-              
                 {/volist}
                 {empty name="list"}<tr><td colspan="18" class="text-center">暂无数据</td></tr>{/empty}
                 </tbody>
@@ -138,6 +152,7 @@
   </div><!-- /.main-content -->
 
 {include file="public:footer"}
+
 <a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
   <i class="ace-icon fa fa-angle-double-up icon-only bigger-110"></i>
 </a>
@@ -167,10 +182,10 @@
  $("#out").click(function(){
 	 var start="{$start}";
 	 var end = "{$end}";
-	 var username="{$username}";
 	 var code="{$code}";
 	 var phone="{$phone}";
-	 var addr="{$addr}";
+   var hid="{$hid}";
+	
 	 if(start == ''){
 		 start=0;
 	 }
@@ -178,34 +193,32 @@
 		 end=0;
 	 }
 	
-	 if(username == ''){
-		 username = 0;
-	 }
 	 if(code == ''){
 		 code = 0;
 	 }
 	 if(phone == ''){
 		 phone = 0;
 	 }
-	 if(addr == ''){
-		 addr = 0;
+   if(hid == ''){
+		 hid = 0;
 	 }
-	 location.href="__URL__/outf/start/"+start+"/end/"+end+"/username/"+username+"/code/"+code+"/phone/"+phone+"/addr/"+addr;
+	
+	 location.href="__URL__/outf/start/"+start+"/end/"+end+"/code/"+code+"/phone/"+phone+"/hid/"+hid;
  })
 </script>
 <script type="text/javascript">
 		function dels(id){
-			layer.confirm('你确定已发货吗？', {icon: 3}, function(index){
+			layer.confirm('你确定删除吗？', {icon: 3}, function(index){
 		    layer.close(index);
-		    window.location.href="__URL__/save/did/"+id;
+		    window.location.href="__URL__/delete/id/"+id;
 		  });
 	    }
 		</script>
 <script type="text/javascript">
 		function change(id){
-			layer.confirm('你确定已付款吗？', {icon: 3}, function(index){
+			layer.confirm('你确定完成吗？', {icon: 3}, function(index){
 		    layer.close(index);
-		    window.location.href="__URL__/change/id/"+id;
+		    window.location.href="__URL__/changes/id/"+id;
 		  });
 	    }
 		</script>

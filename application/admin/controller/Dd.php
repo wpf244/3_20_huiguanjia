@@ -1,5 +1,8 @@
 <?php
 namespace app\admin\controller;
+
+use app\admin\model\Share as AppShare;
+
 \header("content-type:text/html;charset=utf-8;");
 class Dd extends BaseAdmin
 {
@@ -8,174 +11,91 @@ class Dd extends BaseAdmin
         $start=input('start');
         $end=input('end');
         $code=\input('code');
-        $username=\input('username');
-        $addr=\input('addr');
         $phone=\input('phone');
-        if($start || $code || $username || $addr || $phone){
-            if($start){
-                $arrdateone = strtotime($start);
-                $arrdatetwo = strtotime($end . ' 23:55:55');
-                $map['time'] = array(
-                    array(
-                        'egt',
-                        $arrdateone
-                    ),
-                    array(
-                        'elt',
-                        $arrdatetwo
-                    ),
-                    'AND'
-                );
-            }
-            if($code){
-                $map['code']=array('like','%'.$code.'%');
-            }
-            if($username){
-                $maps['username']=array('like','%'.$username.'%');
-                $re=db("addr")->where($maps)->select();
-               // if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-               // }else{
-               //     $map=[];
-              //  }
-            }
-            if($phone){
-                $maps['phone']=array('like','%'.$phone.'%');
-                $re=db("addr")->where($maps)->select();
-              //  if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-              //  }else{
-              //      $map=[];
-              //  }
-            }
-            if($addr){
-                $maps['addr|addrs']=array('like','%'.$addr.'%');
-                $re=db("addr")->where($maps)->select();
-             //   if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-             //   }else{
-              //      $map=[];
-             //   }
-            }
-        }else{
-            
-            $start="";
-            $end="";
-            $username="";
-            $phone="";
-            $addr="";
-            $code="";
-            $map=[];
+        $hid=input("hid");
+        $map=[];
+        if($start){
+            $arrdateone = strtotime($start);
+            $arrdatetwo = strtotime($end . ' 23:55:55');
+            $map['time'] = array(
+                array(
+                    'egt',
+                    $arrdateone
+                ),
+                array(
+                    'elt',
+                    $arrdatetwo
+                ),
+                'AND'
+            );
         }
+        if($code){
+            $map['code']=array('like','%'.$code.'%');
+        }
+    
+        if($phone){
+            $map['phone']=array('like','%'.$phone.'%');
+            
+        }
+        if($hid != 0){
+            $map['hid']=['eq',$hid];
+        }
+         
+        
         $this->assign("start",$start);
         $this->assign("end",$end);
-        $this->assign("username",$username);
+ 
         $this->assign("phone",$phone);
-        $this->assign("addr",$addr);
+
         $this->assign("code",$code);
+
+        $this->assign("hid",$hid);
         
-        $list=db("car_dd")->alias('a')->where("status=0 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
+        $list=db("order")->where(['status'=>0,"is_delete"=>0])->where($map)->order("id desc")->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
+
+        $hotel=db("hotel")->where(["up"=>1,"is_delete"=>0])->select();
+        $this->assign("hotel",$hotel);
         
-        return \view('dai_dd');
+        return $this->fetch();
     }
     public function out(){
         $start=input('start');
         $end=input('end');
         $code=\input('code');
-        $username=\input('username');
-        $addr=\input('addr');
         $phone=\input('phone');
-        if($start || $code || $username || $addr || $phone){
-            if($start){
-                $arrdateone = strtotime($start);
-                $arrdatetwo = strtotime($end . ' 23:55:55');
-                $map['time'] = array(
-                    array(
-                        'egt',
-                        $arrdateone
-                    ),
-                    array(
-                        'elt',
-                        $arrdatetwo
-                    ),
-                    'AND'
-                );
-            }
-            if($code){
-                $map['code']=array('like','%'.$code.'%');
-            }
-            if($username){
-                $maps['username']=array('like','%'.$username.'%');
-                $re=db("addr")->where($maps)->select();
-               // if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-               // }else{
-              //      $map=[];
-              //  }
-            }
-            if($phone){
-                $maps['phone']=array('like','%'.$phone.'%');
-                $re=db("addr")->where($maps)->select();
-               // if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-//                 }else{
-//                     $map=[];
-//                 }
-            }
-            if($addr){
-                $maps['addr|addrs']=array('like','%'.$addr.'%');
-                $re=db("addr")->where($maps)->select();
-//                 if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-//                 }else{
-//                     $map=[];
-//                 }
-            }
-        }else{
-            
-            $start="";
-            $end="";
-            $username="";
-            $phone="";
-            $addr="";
-            $code="";
-            $map=[];
+        $hid=input("hid");
+        $map=[];
+        if($start){
+            $arrdateone = strtotime($start);
+            $arrdatetwo = strtotime($end . ' 23:55:55');
+            $map['time'] = array(
+                array(
+                    'egt',
+                    $arrdateone
+                ),
+                array(
+                    'elt',
+                    $arrdatetwo
+                ),
+                'AND'
+            );
         }
-        $this->assign("start",$start);
-        $this->assign("end",$end);
-        $this->assign("username",$username);
-        $this->assign("phone",$phone);
-        $this->assign("addr",$addr);
-        $this->assign("code",$code);
-        
-        $list=db("car_dd")->alias('a')->where("status=0 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
+        if($code){
+            $map['code']=array('like','%'.$code.'%');
+        }
+    
+        if($phone){
+            $map['phone']=array('like','%'.$phone.'%');
+            
+        }
+        if($hid != 0){
+            $map['hid']=['eq',$hid];
+        }
+         
+        $list=db("order")->where(['status'=>0,"is_delete"=>0])->where($map)->order("id desc")->paginate(20,false,['query'=>request()->param()]);
         // var_dump($data);exit;
         vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
         vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
@@ -186,8 +106,8 @@ class Dd extends BaseAdmin
     
         $objActSheet = $objExcel->getActiveSheet();
         $key = ord("A");
-        $letter =explode(',',"A,B,C,D,E,F");
-        $arrHeader =  array("订单号","订单总金额","下单时间","收货人姓名","收货人电话","收货人地址");
+        $letter =explode(',',"A,B,C,D,E,F,G,H,I,J");
+        $arrHeader =  array("订单号","订单金额","酒店名称","房间名称","房间类型","会议时间","会议人数","会议需求","联系电话","下单时间");
         //填充表头信息
         $lenth =  count($arrHeader);
         for($i = 0;$i < $lenth;$i++) {
@@ -197,12 +117,17 @@ class Dd extends BaseAdmin
         foreach($list as $k=>$v){
             $k +=2;
             $objActSheet->setCellValue('A'.$k,$v['code']);
-            $objActSheet->setCellValue('B'.$k, $v['zprice']);    
+            $objActSheet->setCellValue('B'.$k, $v['price']);    
             // 表格内容
-            $objActSheet->setCellValue('C'.$k, \date("Y-m-d H:i:s",$v['time']));
-            $objActSheet->setCellValue('D'.$k, $v['username']);
-            $objActSheet->setCellValue('E'.$k, $v['phone']);
-            $objActSheet->setCellValue('F'.$k, $v['addr'].$v['addrs']);
+            $objActSheet->setCellValue('C'.$k, $v['hotel']);
+            $objActSheet->setCellValue('D'.$k, $v['room']);
+            $objActSheet->setCellValue('E'.$k, $v['room_type']);
+            $objActSheet->setCellValue('F'.$k, $v['dates']);
+            $objActSheet->setCellValue('G'.$k, $v['number']);
+            $objActSheet->setCellValue('H'.$k, $v['ment']);
+            $objActSheet->setCellValue('I'.$k, $v['phone']);
+            $objActSheet->setCellValue('J'.$k, \date("Y-m-d H:i:s",$v['time']));
+         
 
     
             // 表格高度
@@ -217,6 +142,10 @@ class Dd extends BaseAdmin
         $objActSheet->getColumnDimension('D')->setWidth(25);
         $objActSheet->getColumnDimension('E')->setWidth(25);
         $objActSheet->getColumnDimension('F')->setWidth(30);
+        $objActSheet->getColumnDimension('G')->setWidth(30);
+        $objActSheet->getColumnDimension('H')->setWidth(30);
+        $objActSheet->getColumnDimension('I')->setWidth(30);
+        $objActSheet->getColumnDimension('J')->setWidth(30);
   
 
         if($start !=0 ){
@@ -246,30 +175,14 @@ class Dd extends BaseAdmin
         header("Pragma: no-cache");
         $objWriter->save('php://output');
     }
-    public function detail()
-    {
-        $id=\input('id');
-        $re=db("car_dd")->where("did=$id")->find();
-        $pay=$re['pay'];
-        $res=\explode(",", $pay);
-        $arr=array();
-        foreach ($res as $v){
-            $arr[]=db("car_dd")->alias("a")->where("code='$v'")->join("addr b","a.a_id=b.aid","left")->find();
-        }
-        $this->assign("list",$arr);
-        return \view("detail");
-    }
+   
     public function delete()
     {
         $id=\input('id');
-        $re=db("car_dd")->where("did=$id")->find();
+        $re=db("order")->where("id=$id")->find();
         if($re){
-            $del=db("car_dd")->where("did=$id")->delete();
-            $pay=$re['pay'];
-            $res=\explode(",", $pay);
-            foreach ($res as $v){
-                $dels=db("car_dd")->where("code='$v'")->delete();
-            }
+            $del=db("order")->where("id=$id")->setField("is_delete",-1);
+           
             $this->redirect("dai_dd");
         }else{
             $this->redirect("dai_dd");
@@ -278,52 +191,43 @@ class Dd extends BaseAdmin
     public function change()
     {
         $id=\input('id');
-        $re=db("car_dd")->where("did=$id")->find();
+        $re=db("order")->where("id=$id")->find();
         if($re){
-            $del=db("car_dd")->where("did=$id")->setField("status",1);
-            $pay=$re['pay'];
-            $res=\explode(",", $pay);
-            foreach ($res as $v){
-                $dels=db("car_dd")->where("code='$v'")->setField("status",1);
+            $data['status']=1;
+            $data['fu_time']=time();
+            db("order")->where("id=$id")->update($data);
+          
+            
+            //是否开启分销
+            $basic=db("basic")->where("id",1)->find();
+            if($basic['status'] == 1){
+                //分销返利
+                $moneys=$re['price'];
+                $uid=$re['uid'];
+                $share=new AppShare();
+                $share->share($uid,$moneys);
             }
             
-            $moneys=$re['zprice'];
-            //公益金
-            $fund=($moneys/100*1);
-            db("fund")->where("id=1")->setInc("money",$fund);
-            //分红比例
-            $cobber=db("cobber")->where("id=2")->find();
-            $agio=$cobber['rabate'];
-            //分红金额
-            $money=($moneys/100*$agio);
-
-            //查询平台总股数
-            $shares=db("user")->sum("money");
-            
-            if($shares != 0){
-                //每股应返多少
-                $one=($money/$shares);
-                //查询用户的总股数
-                $user=db("user")->where("money > 0")->select();
-                if($user){
-                    foreach($user as $k => $v){
-                         $new_shares=($v['money']*$one);
-                         db("user")->where("uid={$v['uid']}")->setInc("money",$new_shares);
-
-                         //增加分红日志
-                         $data['u_id']=$v['uid'];
-                         $data['money']=$new_shares;
-                         $data['time']=time();
-                         db("money_log")->insert($data);
-                    }
-                }
            
-            }
-
-
+            
             $this->redirect("dai_dd");
         }else{
             $this->redirect("dai_dd");
+        }
+    }
+    public function changes()
+    {
+        $id=\input('id');
+        $re=db("order")->where("id=$id")->find();
+        if($re){
+            $data['status']=2;
+            
+            db("order")->where("id=$id")->update($data);
+          
+            
+            $this->redirect("fa_dd");
+        }else{
+            $this->redirect("fa_dd");
         }
     }
     public function fa_dd()
@@ -331,88 +235,53 @@ class Dd extends BaseAdmin
         $start=input('start');
         $end=input('end');
         $code=\input('code');
-        $username=\input('username');
-        $addr=\input('addr');
         $phone=\input('phone');
-        if($start || $code || $username || $addr || $phone){
-            if($start){
-                $arrdateone = strtotime($start);
-                $arrdatetwo = strtotime($end . ' 23:55:55');
-                $map['time'] = array(
-                    array(
-                        'egt',
-                        $arrdateone
-                    ),
-                    array(
-                        'elt',
-                        $arrdatetwo
-                    ),
-                    'AND'
-                );
-            }
-            if($code){
-                $map['code']=array('like','%'.$code.'%');
-            }
-            if($username){
-                $maps['username']=array('like','%'.$username.'%');
-                $re=db("addr")->where($maps)->select();
-              //  if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-//                 }else{
-//                     $map=[];
-//                 }
-            }
-            if($phone){
-                $maps['phone']=array('like','%'.$phone.'%');
-                $re=db("addr")->where($maps)->select();
-              //  if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-             //   }else{
-              //      $map=[];
-              //  }
-            }
-            if($addr){
-                $maps['addr|addrs']=array('like','%'.$addr.'%');
-                $re=db("addr")->where($maps)->select();
-             //   if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-              //  }else{
-              //      $map=[];
-             //   }
-            }
-        }else{
-        
-            $start="";
-            $end="";
-            $username="";
-            $phone="";
-            $addr="";
-            $code="";
-            $map=[];
+        $hid=input("hid");
+        $map=[];
+        if($start){
+            $arrdateone = strtotime($start);
+            $arrdatetwo = strtotime($end . ' 23:55:55');
+            $map['time'] = array(
+                array(
+                    'egt',
+                    $arrdateone
+                ),
+                array(
+                    'elt',
+                    $arrdatetwo
+                ),
+                'AND'
+            );
         }
+        if($code){
+            $map['code']=array('like','%'.$code.'%');
+        }
+    
+        if($phone){
+            $map['phone']=array('like','%'.$phone.'%');
+            
+        }
+        if($hid != 0){
+            $map['hid']=['eq',$hid];
+        }
+         
+        
         $this->assign("start",$start);
         $this->assign("end",$end);
-        $this->assign("username",$username);
+ 
         $this->assign("phone",$phone);
-        $this->assign("addr",$addr);
+
         $this->assign("code",$code);
+
+        $this->assign("hid",$hid);
         
-        $list=db("car_dd")->alias('a')->where("status=1 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
+        $list=db("order")->where(['status'=>['gt',0],"is_delete"=>0])->where($map)->order(["status asc","id desc"])->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
+
+        $hotel=db("hotel")->where(["up"=>1,"is_delete"=>0])->select();
+        $this->assign("hotel",$hotel);
         
         return \view("fa_dd");
     }
@@ -420,85 +289,37 @@ class Dd extends BaseAdmin
         $start=input('start');
         $end=input('end');
         $code=\input('code');
-        $username=\input('username');
-        $addr=\input('addr');
         $phone=\input('phone');
-        if($start || $code || $username || $addr || $phone){
-            if($start){
-                $arrdateone = strtotime($start);
-                $arrdatetwo = strtotime($end . ' 23:55:55');
-                $map['time'] = array(
-                    array(
-                        'egt',
-                        $arrdateone
-                    ),
-                    array(
-                        'elt',
-                        $arrdatetwo
-                    ),
-                    'AND'
-                );
-            }
-            if($code){
-                $map['code']=array('like','%'.$code.'%');
-            }
-            if($username){
-                $maps['username']=array('like','%'.$username.'%');
-                $re=db("addr")->where($maps)->select();
-               // if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-              //  }else{
-             //       $map=[];
-             //   }
-            }
-            if($phone){
-                $maps['phone']=array('like','%'.$phone.'%');
-                $re=db("addr")->where($maps)->select();
-              //  if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-              //  }else{
-              //      $map=[];
-              //  }
-            }
-            if($addr){
-                $maps['addr|addrs']=array('like','%'.$addr.'%');
-                $re=db("addr")->where($maps)->select();
-               // if($re){
-                    $id=array();
-                    foreach ($re as $v){
-                        $id[]=$v['aid'];
-                    }
-                    $map['a_id']=array("in",$id);
-               // }else{
-               //     $map=[];
-               // }
-            }
-        }else{
-    
-            $start="";
-            $end="";
-            $username="";
-            $phone="";
-            $addr="";
-            $code="";
-            $map=[];
+        $hid=input("hid");
+        $map=[];
+        if($start){
+            $arrdateone = strtotime($start);
+            $arrdatetwo = strtotime($end . ' 23:55:55');
+            $map['time'] = array(
+                array(
+                    'egt',
+                    $arrdateone
+                ),
+                array(
+                    'elt',
+                    $arrdatetwo
+                ),
+                'AND'
+            );
         }
-        $this->assign("start",$start);
-        $this->assign("end",$end);
-        $this->assign("username",$username);
-        $this->assign("phone",$phone);
-        $this->assign("addr",$addr);
-        $this->assign("code",$code);
+        if($code){
+            $map['code']=array('like','%'.$code.'%');
+        }
     
-        $list=db("car_dd")->alias('a')->where("status=1 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
+        if($phone){
+            $map['phone']=array('like','%'.$phone.'%');
+            
+        }
+        if($hid != 0){
+            $map['hid']=['eq',$hid];
+        }
+         
+        $list=db("order")->where(['status'=>['gt',0],"is_delete"=>0])->where($map)->order("id desc")->paginate(20,false,['query'=>request()->param()]);
         // var_dump($data);exit;
         vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
         vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
@@ -509,8 +330,8 @@ class Dd extends BaseAdmin
     
         $objActSheet = $objExcel->getActiveSheet();
         $key = ord("A");
-        $letter =explode(',',"A,B,C,D,E,F");
-        $arrHeader =  array("订单号","订单总金额","下单时间","收货人姓名","收货人电话","收货人地址");
+        $letter =explode(',',"A,B,C,D,E,F,G,H,I,J");
+        $arrHeader =  array("订单号","订单金额","酒店名称","房间名称","房间类型","会议时间","会议人数","会议需求","联系电话","下单时间");
         //填充表头信息
         $lenth =  count($arrHeader);
         for($i = 0;$i < $lenth;$i++) {
@@ -520,13 +341,18 @@ class Dd extends BaseAdmin
         foreach($list as $k=>$v){
             $k +=2;
             $objActSheet->setCellValue('A'.$k,$v['code']);
-            $objActSheet->setCellValue('B'.$k, $v['zprice']);
+            $objActSheet->setCellValue('B'.$k, $v['price']);    
             // 表格内容
-            $objActSheet->setCellValue('C'.$k, \date("Y-m-d H:i:s",$v['time']));
-            $objActSheet->setCellValue('D'.$k, $v['username']);
-            $objActSheet->setCellValue('E'.$k, $v['phone']);
-            $objActSheet->setCellValue('F'.$k, $v['addr'].$v['addrs']);
-    
+            $objActSheet->setCellValue('C'.$k, $v['hotel']);
+            $objActSheet->setCellValue('D'.$k, $v['room']);
+            $objActSheet->setCellValue('E'.$k, $v['room_type']);
+            $objActSheet->setCellValue('F'.$k, $v['dates']);
+            $objActSheet->setCellValue('G'.$k, $v['number']);
+            $objActSheet->setCellValue('H'.$k, $v['ment']);
+            $objActSheet->setCellValue('I'.$k, $v['phone']);
+            $objActSheet->setCellValue('J'.$k, \date("Y-m-d H:i:s",$v['time']));
+         
+
     
             // 表格高度
             $objActSheet->getRowDimension($k)->setRowHeight(20);
@@ -540,24 +366,28 @@ class Dd extends BaseAdmin
         $objActSheet->getColumnDimension('D')->setWidth(25);
         $objActSheet->getColumnDimension('E')->setWidth(25);
         $objActSheet->getColumnDimension('F')->setWidth(30);
-    
-    
+        $objActSheet->getColumnDimension('G')->setWidth(30);
+        $objActSheet->getColumnDimension('H')->setWidth(30);
+        $objActSheet->getColumnDimension('I')->setWidth(30);
+        $objActSheet->getColumnDimension('J')->setWidth(30);
+  
+
         if($start !=0 ){
              
             $times=($start."-".$end);
         }else{
             $times="";
         }
-        $outfile = "$times"."待发货订单".".xls";
+        $outfile = "$times"."已付款订单".".xls";
     
         $userBrowser=$_SERVER['HTTP_USER_AGENT'];
-    
+        
         if(preg_match('/MSIE/i', $userBrowser)){
             $outfile=urlencode($outfile);
-             
+           
         }else{
             $outfile= iconv("utf-8","gb2312",$outfile);;
-    
+            
         }
         ob_end_clean();
         header("Content-Type: application/force-download");

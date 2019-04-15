@@ -21,8 +21,10 @@ class Login extends BaseApi
         if($fid != 0){
             $data['fid']=$fid;
         }
-
-        $url="https://api.weixin.qq.com/sns/jscode2session?appid=wx0bf6a1d285ef4fc8&secret=32cded6845fe0735fea052ab0e415d1e&js_code=".$code."&grant_type=authorization_code";
+        $payment=db("payment")->where("id",1)->find();
+        $appid = $payment['appid'];
+        $secret = $payment['appsecret'];
+        $url="https://api.weixin.qq.com/sns/jscode2session?appid=".$appid."&secret=".$secret."&js_code=".$code."&grant_type=authorization_code";
         $results=json_decode(file_get_contents($url),true);
         $openid=$results['openid'];
         if(!$openid){
