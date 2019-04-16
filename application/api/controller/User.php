@@ -608,7 +608,7 @@ class User extends BaseHome
         
         $data=input("post.");
         $data['addtime']=time();
-        $data['status']=1;
+        $data['status']=0;
         $data['uid']=Request::instance()->header("uid");
         $re=db("assess")->insert($data);
         if($re){
