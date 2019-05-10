@@ -35,9 +35,7 @@
               <div class="page-header">
                 <div class="row">
                 <div class="col-sm-4">
-                <a class="btn btn-success btn-white btn-bold" href="{:url('Member/add')}">
-                  <i class="ace-icon fa fa-plus icon-only"></i>
-                  添加</a>
+             
                 </div>
                 </div>
               </div>
@@ -49,6 +47,7 @@
                   <th class="hidden-480">手机号码</th>
                   <th class="hidden-480">头像</th>
                   <th class="hidden-480">佣金</th>
+                  <th class="hidden-480">红包余额</th>
                   <th class="hidden-480">等级</th>
                   <th class="hidden-480">上级会员</th>
                   <th class="hidden-480">注册时间</th>
@@ -71,7 +70,7 @@
                     </a></li>
                   </td>
                   <td>{$v.money}<i class="ace-icon fa fa-pencil bigger-120" onclick="change_money({$v.uid})"></i></td>
-               
+                  <td>{$v.red_money}</td>
                   <td class="hidden-480">
                       <i class="ace-icon fa fa-chevron-circle-down bigger-120" onclick="level_change('down', {$v.uid})"></i>
                       <span id="level{$v.uid}">
@@ -85,6 +84,9 @@
                    
                     <a class="btn btn-xs btn-info" href="{:url('Member/money_log',array('id'=>$v['uid']))}" title="修改">
                       佣金日志
+                    </a>
+                    <a class="btn btn-xs btn-info" href="{:url('Member/red_money_log',array('id'=>$v['uid']))}" title="修改">
+                      红包日志
                     </a>
                     <button class="btn btn-xs btn-danger" type="button" onclick="dels({$v.uid})" title="删除">
                       删除

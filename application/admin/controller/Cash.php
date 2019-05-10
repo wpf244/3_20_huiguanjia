@@ -53,14 +53,27 @@ class Cash extends BaseAdmin
              $datas['uid']=$re['uid'];
              $datas['money']=$re['moneys'];
              $datas['type']=1;
-             $datas['oper']="佣金提现驳回增加";
+             if($re['types'] == 0){
+                $datas['oper']="佣金提现驳回增加";
+             }else{
+                $datas['content']="红包提现驳回增加";
+             }
+             
              $datas['time']=time();
              // 启动事务
                 Db::startTrans();
                 try{
-                    db("user")->where("uid",$re['uid'])->setInc("money",$re['moneys']);
                     db("cash")->where("id",$id)->update($data);
-                    db("money_log")->insert($datas);
+                    if($re['types'] == 0){
+                        db("user")->where("uid",$re['uid'])->setInc("money",$re['moneys']);
+                    
+                        db("money_log")->insert($datas);
+                    }else{
+                        db("user")->where("uid",$re['uid'])->setInc("red_money",$re['moneys']);
+                    
+                    db("red_log")->insert($datas);
+                    }
+                    
                     // 提交事务
                     Db::commit();    
                 } catch (\Exception $e) {

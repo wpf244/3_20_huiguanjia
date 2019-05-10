@@ -82,6 +82,7 @@
                   <th>账号信息</th>
                   <th>申请时间</th>
                   <th>通过时间</th>
+                  <th>提现类型</th>
                 </tr>
                 </thead>
                 
@@ -101,6 +102,9 @@
                     {$v.times|date="Y-m-d H:i:s",###}
 
                   </td>
+                  <td>
+                      {if condition="$v.types eq 0"}佣金提现 {else /}红包余额提现{/if}
+                    </td>
                 </tr>
                 {/volist}
                 {empty name="list"}<tr><td colspan="15" class="text-center">暂无数据</td></tr>{/empty}

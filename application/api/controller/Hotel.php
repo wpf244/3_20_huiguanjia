@@ -104,8 +104,10 @@ class Hotel extends BaseApi
         $url=parent::getUrl();
 
         $cid=input("cid");
-
-        $map['cid']=array('eq',$cid);
+        if($cid){
+            $map['cid']=array('eq',$cid);
+        }
+        
         $map['is_delete']=array('eq',0);
         $map['up']=array('eq',1);
 

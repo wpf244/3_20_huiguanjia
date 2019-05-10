@@ -318,11 +318,20 @@ class Login extends BaseApi
         $pwd=input("pwd");
         $re=db("user")->where(["phone"=>$phone,"pwd"=>$pwd])->find();
         if($re){
+           if($re['is_delete'] == 0){
             $arr=[
                 'error_code'=>0,
                 'msg'=>'登录成功',
                 'data'=>['uid'=>$re['uid']]
             ]; 
+           } else{
+            $arr=[
+                'error_code'=>1,
+                'msg'=>'账号或密码错误',
+                'data'=>[]
+            ]; 
+           }
+            
         }else{
             $arr=[
                 'error_code'=>1,

@@ -16,7 +16,7 @@ class User extends BaseHome
     {
         $uid=Request::instance()->header('uid');
 
-        $re=db("user")->field("nickname,image,phone")->where("uid",$uid)->find();
+        $re=db("user")->field("nickname,image,phone,red_money,money")->where("uid",$uid)->find();
 
         $arr=[
             'error_code'=>0,
@@ -422,6 +422,167 @@ class User extends BaseHome
         echo \json_encode($arr);
     }
     /**
+    * 提现
+    *
+    * @return void
+    */
+    public function red_cash()
+    {
+        $uid=Request::instance()->header("uid");
+
+        $re=db("user")->field("red_money")->where("uid",$uid)->find();
+
+        // $lb=db("lb")->field("desc")->where("fid",8)->find();
+        // $re['desc']=$lb['desc'];
+        $arr=[
+            'error_code'=>0,
+            'msg'=>'获取成功',
+            'data'=>$re
+            
+        ];
+        echo \json_encode($arr);
+    }
+     /**
+    * 红包余额保存提现
+    *
+    * @return void
+    */
+    public function red_cash_save()
+    {
+        $uid=Request::instance()->header("uid");
+
+        $money=input("money");
+        $content=input("content");
+
+        $re=db("user")->field("red_money")->where("uid",$uid)->find();
+        $moneys=$re['red_money'];
+
+        if($moneys >= $money){
+            $basic=db("basic")->where("id",1)->find();
+            $quota=$basic['quota'];
+            $charge=$basic['rate'];
+            if($money >= $quota){
+               
+                   
+                $data['uid']=$uid;
+                $data['moneys']=$money;
+                $data['charge']=$money*$charge/100;
+                $data['money']=$money-$data['charge'];
+                $data['content']=$content;
+                $data['time']=time();
+                $data['balance']=$moneys-$money;
+                $data['types']=1;
+
+                $datas['uid']=$uid;
+                $datas['money']=$money;
+                $datas['type']=0;
+                $datas['content']="提现减少红包余额";
+                $datas['time']=time();
+
+                Db::startTrans();
+                try{
+                   
+                   db("user")->where("uid",$uid)->setDec("red_money",$money);
+                   db("cash")->insert($data);
+                   db("red_log")->insert($datas);
+                    // 提交事务
+                    Db::commit();   
+                   
+                } catch (\Exception $e) {
+                    // 回滚事务
+                    Db::rollback();
+                    $arr=[
+                        'error_code'=>3,
+                        'msg'=>"系统繁忙请稍后再试",
+                        'data'=>[]
+                        
+                    ];
+                }
+
+              $arr=[
+                    'error_code'=>0,
+                    'msg'=>"操作成功",
+                    'data'=>[]
+                    
+                ];
+            }else{
+                $arr=[
+                    'error_code'=>2,
+                    'msg'=>"最少提现".$basic."元",
+                    'data'=>[]
+                    
+                ];
+            }
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'msg'=>'红包余额不足',
+                'data'=>[]
+                
+            ];
+        }
+        echo \json_encode($arr);
+    }
+
+    /**
+    * 红包获取记录
+    *
+    * @return void
+    */
+    public function red_log()
+    {
+        $uid=Request::instance()->header("uid");
+
+        $res=db("red_log")->where(["uid"=>$uid,"type"=>['>',0]])->order("id desc")->select();
+
+        if($res){
+            $arr=[
+                'error_code'=>0,
+                'msg'=>'获取成功',
+                'data'=>$res
+                
+            ]; 
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'msg'=>'暂无数据',
+                'data'=>[]
+                
+            ]; 
+        }
+        echo \json_encode($arr);
+    }
+
+     /**
+    * 红包提现记录
+    *
+    * @return void
+    */
+    public function red_cash_log()
+    {
+        $uid=Request::instance()->header("uid");
+        $res=db("cash")->where(["uid"=>$uid,"types"=>1])->select();
+        if($res){
+            $arr=[
+                'error_code'=>0,
+                'msg'=>'获取成功',
+                'data'=>$res
+                
+            ];
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'msg'=>'暂无数据',
+                'data'=>[]
+                
+            ];
+        }
+        echo \json_encode($arr);
+    }
+
+
+
+    /**
     * 保存提现
     *
     * @return void
@@ -509,7 +670,7 @@ class User extends BaseHome
     public function cash_log()
     {
         $uid=Request::instance()->header("uid");
-        $res=db("cash")->where("uid",$uid)->select();
+        $res=db("cash")->where(["uid"=>$uid,"types"=>0])->select();
         if($res){
             $arr=[
                 'error_code'=>0,

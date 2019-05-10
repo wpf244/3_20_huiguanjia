@@ -129,6 +129,19 @@ class Member extends BaseAdmin
         $this->assign('user', $user);
         return $this->fetch();
     }
+    /**
+    * 红包日志
+    *
+    * @return void
+    */
+    public function red_money_log(){
+        $id = Request::instance()->param('id', 0);
+        $user = db('user')->where('uid', $id)->find();
+        $list = db("red_log")->where('uid', $id)->order("id desc")->paginate(10);
+        $this->assign('list', $list);
+        $this->assign('user', $user);
+        return $this->fetch();
+    }
 
     /**
      * 奖励金日志
@@ -212,7 +225,7 @@ class Member extends BaseAdmin
         $re=db("user")->where("uid=$id")->find();
         if($re){
             
-            $del=db("user")->where("uid=$id")->setField("is_delete",-1);
+            $del=db("user")->where("uid=$id")->delete();
             if($del){
                 
                 echo '0';

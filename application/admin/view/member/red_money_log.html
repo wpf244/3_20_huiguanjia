@@ -22,8 +22,9 @@
             <i class="ace-icon fa fa-home home-icon"></i>
             <a href="{:url('Index/index')}">首页</a>
           </li>
-          <li class="active">提现管理</li>
-          <li class="active">申请列表</li>
+          <li class="active">会员管理</li>
+          <li class="active">{$user.nickname}</li>
+          <li class="active">红包余额日志</li>
         </ul><!-- /.breadcrumb -->
 
       </div>
@@ -74,15 +75,11 @@
                 <tr>
                   
                   <th>ID</th>                
-                  <th>用户昵称</th>                               
-                  <th>用户手机号码</th>
-                  <th>提现金额</th>
-                  <th>手续费</th>
-                  <th>实到金额</th>
-                  <th>账号信息</th>
-                  <th>申请时间</th>
-                  <th>提现类型</th>
-                  <th>操作</th>
+                  <th>红包金额</th>                               
+                  <th>类型</th>
+                  <th>备注</th>
+                  <th>记录时间</th>
+                
                 </tr>
                 </thead>
                 
@@ -91,25 +88,15 @@
                 <tr class="ace-thumbnails">
                 
                   <td><span class="badge badge-grey">{$v.id}</span></td>
-                  <td>{$v.nickname} </td>
-                  <td>{$v.phone} </td>
-                  <td>{$v.moneys} </td>
-                  <td>{$v.charge} </td>
+                 
                   <td>{$v.money} </td>
+              
+                  <td>
+                      {if condition="$v.type == 0"}减少{else /}增加{/if}
+                  </td>
                   <td>{$v.content} </td>
                   <td>{$v.time|date="Y-m-d H:i:s",###}</td>
-                  <td>
-                    {if condition="$v.types eq 0"}佣金提现 {else /}红包余额提现{/if}
-                  </td>
-                  <td>
-                    <button class="btn btn-xs btn-info" type="button" onclick="change({$v.id})" title="完成">
-                      完成
-                    </button> 
-                    <button class="btn btn-xs btn-danger" type="button" onclick="bo({$v.id})" title="驳回">
-                      驳回
-                    </button> 
-
-                  </td>
+              
                 </tr>
                 {/volist}
                 {empty name="list"}<tr><td colspan="15" class="text-center">暂无数据</td></tr>{/empty}
@@ -147,53 +134,21 @@
   })
 </script>
 <script type="text/javascript">
-		function change(id){
-			layer.confirm('你确定已打款吗？', {icon: 3}, function(index){
+		function dels(id){
+			layer.confirm('你确定删除吗？', {icon: 3}, function(index){
 		    layer.close(index);
-		    $.ajax({
-          type:"post",
-          url:"{:url('Cash/change')}",
-          data:{id:id},
-          dataType:"text",
-          success:function(re)
-          {
-             if(re == 1){
-               layer.msg("操作成功");
-               setTimeout("location.reload()",2000);
-             }else{
-               layer.msg("操作失败");
-               setTimeout("location.reload()",2000);
-             }
-          }
-        })
+		    window.location.href="__URL__/delete/id/"+id;
 		  });
 	    }
-    </script>
-    
-    <script type="text/javascript">
-      function bo(id){
-        layer.confirm('你确定驳回吗？', {icon: 3}, function(index){
-          layer.close(index);
-          $.ajax({
-            type:"post",
-            url:"{:url('Cash/bo')}",
-            data:{id:id},
-            dataType:"text",
-            success:function(re)
-            {
-              if(re == 1){
-               layer.msg("操作成功");
-               setTimeout("location.reload()",2000);
-             }else{
-               layer.msg("操作失败");
-               setTimeout("location.reload()",2000);
-             }
-            }
-          })
-        });
-        }
-      </script>
-
+		</script>
+<script>
+	function change(id){
+			layer.confirm('你确定通过审核吗？', {icon: 3}, function(index){
+		    layer.close(index);
+		    window.location.href="__URL__/change/id/"+id;
+		  });
+	    }
+</script>
 
 
   <script>
