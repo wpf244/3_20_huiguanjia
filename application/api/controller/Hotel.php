@@ -133,7 +133,7 @@ class Hotel extends BaseApi
         }
 
         $keywords=input("keywords");
-        $map['name']=array("like","%$keywords%");
+        $map['name|addr']=array("like","%$keywords%");
 
         $sort=input("sort");
         if($sort == 1){
