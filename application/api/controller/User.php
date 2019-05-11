@@ -316,6 +316,7 @@ class User extends BaseHome
         $uid = Request::instance()->header('uid');
         $fid = Request::instance()->param('fid', 0);
         $page = Request::instance()->param('page', '');
+
         //微信token
         $payment=db("payment")->where("id",1)->find();
         $appid = $payment['appid'];
@@ -323,13 +324,15 @@ class User extends BaseHome
         $url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=".$appid."&secret=".$secret;
         $results=json_decode(file_get_contents($url)); 
         //请求二维码的二进制资源
-        $post_data='{"fid":"'.$fid.'", "page":"'. $page .'"}';
+        $post_data='{"scene":"'.$fid.'", "page":"'. $page .'"}';
         $res_url="https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=".$results->access_token;
         $result=$this->httpRequest($res_url,$post_data,'POST');
         //转码为base64格式并本地保存
         $base64_image ="data:image/jpeg;base64,".base64_encode($result);
         $path = 'uploads/'.uniqid().'.jpg';
         $res = $this->file_put($base64_image, $path);
+
+        //var_dump($result);exit;
         //业务处理
         if($res){
             db('user')->where('uid', $uid)->update(['card'=>$path]);
@@ -356,17 +359,17 @@ class User extends BaseHome
      * @param [type] $new_file 保存的路径，文件夹必须存在
      * @return void
      */
-    public function file_put($base64_image_content,$new_file)
-    {
-        header('Content-type:text/html;charset=utf-8');
-        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64_image_content, $result)){
-            if (file_put_contents($new_file, base64_decode(str_replace($result[1], '', $base64_image_content)))){
-                return true;
-            }else{
-                return false;
-            }
-        }
-    }
+     public function file_put($base64_image_content,$new_file)
+     {
+         header('Content-type:text/html;charset=utf-8');
+         if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64_image_content, $result)){
+             if (file_put_contents($new_file, base64_decode(str_replace($result[1], '', $base64_image_content)))){
+                 return true;
+             }else{
+                 return false;
+             }
+         }
+     }
 
     /**
      * curl函数网站请求封装函数
@@ -376,7 +379,7 @@ class User extends BaseHome
      * @param string $method 请求方法
      * @return void
      */
-    function httpRequest($url, $data='', $method='GET'){
+     function httpRequest($url, $data='', $method='GET'){
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
@@ -508,7 +511,7 @@ class User extends BaseHome
             }else{
                 $arr=[
                     'error_code'=>2,
-                    'msg'=>"最少提现".$basic."元",
+                    'msg'=>"最少提现".$quota."元",
                     'data'=>[]
                     
                 ];
@@ -647,7 +650,7 @@ class User extends BaseHome
             }else{
                 $arr=[
                     'error_code'=>2,
-                    'msg'=>"最少提现".$basic."元",
+                    'msg'=>"最少提现".$quota."元",
                     'data'=>[]
                     
                 ];
@@ -767,22 +770,80 @@ class User extends BaseHome
     public function save_assess()
     {
         
-        $data=input("post.");
-        $data['addtime']=time();
-        $data['status']=0;
-        $data['uid']=Request::instance()->header("uid");
-        $re=db("assess")->insert($data);
-        if($re){
+       
+        $id=input("did");
+
+        $order=db("order")->where("id",$id)->find();
+
+        if($order['status'] == 2){
+            $res=db("order")->where("id",$id)->setField("status",3);
+
+            $data['hid']=$order['hid'];
+            $data['number']=input("number");
+            $data['content']=input("content");
+            $data['addtime']=time();
+            $data['status']=0;
+            $data['uid']=Request::instance()->header("uid");
+            $re=db("assess")->insert($data);
+            if($re){
+                $arr=[
+                    'error_code'=>0,
+                    'msg'=>'保存成功',
+                    'data'=>[]
+                    
+                ];
+            }else{
+                $arr=[
+                    'error_code'=>1,
+                    'msg'=>'保存失败',
+                    'data'=>[]
+                    
+                ];
+            }
+        }else{
             $arr=[
-                'error_code'=>0,
-                'msg'=>'保存成功',
+                'error_code'=>2,
+                'msg'=>'订单状态异常',
                 'data'=>[]
                 
             ];
+        }
+
+        
+        echo \json_encode($arr);
+    }
+    /**
+    * 订单确认完成
+    *
+    * @return void
+    */
+    public function change()
+    {
+        $did=input("did");
+
+        $re=db("order")->where(["id"=>$did])->find();
+
+        if($re['status'] == 1){
+            $res=db("order")->where(["id"=>$did])->setField("status",2);
+            if($res){
+                $arr=[
+                    'error_code'=>0,
+                    'msg'=>'操作成功',
+                    'data'=>[]
+                    
+                ];
+            }else{
+                $arr=[
+                    'error_code'=>1,
+                    'msg'=>'操作失败',
+                    'data'=>[]
+                    
+                ];
+            }
         }else{
             $arr=[
-                'error_code'=>1,
-                'msg'=>'保存失败',
+                'error_code'=>2,
+                'msg'=>'订单状态异常',
                 'data'=>[]
                 
             ];

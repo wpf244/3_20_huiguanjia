@@ -44,7 +44,7 @@ class Pay extends Controller
         $input->SetBody("$name");
         $input->SetOut_trade_no("$order");
         $input->SetTotal_fee("$money");
-        $input->SetNotify_url("https://weitenong.dd371.com/Api/Pay/notify/");
+        $input->SetNotify_url("https://huiguanjia.dd371.com/Api/Pay/notify/");
         $input->SetTrade_type("JSAPI");
         $input->SetTime_start(date("YmdHis"));
         $input->SetTime_expire(date("YmdHis", time() + 600));
@@ -83,7 +83,7 @@ class Pay extends Controller
                 if($re['status'] == 0){
                     $data['fu_time']=time();
                     $data['status']=1;
-                    $changestatus=db("car_dd")->where("id=$id")->update($data);
+                    $changestatus=db("order")->where("id=$id")->update($data);
                     if($changestatus){
                         
                         //是否开启分销
