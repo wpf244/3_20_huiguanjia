@@ -315,7 +315,7 @@ class Hotel extends BaseApi
         $map['is_delete']=array('eq',0);
         $map['up']=array('eq',1);
 
-        $map['addr']=array('like',"%$addr%");
+        $map['addr']=array('like',"%".$addr."%");
 
         $qid=input("qid");
         if($qid){
@@ -338,8 +338,8 @@ class Hotel extends BaseApi
             $map['mid']=array("eq",$mid);
         }
 
-        $keywords=input("keywords");
-        $map['name']=array("like","%$keywords%");
+        // $keywords=input("keywords");
+        // $map['name']=array("like","%".$keywords."%");
 
         $sort=input("sort");
         if($sort == 1){

@@ -564,7 +564,7 @@ class User extends BaseHome
     public function red_cash_log()
     {
         $uid=Request::instance()->header("uid");
-        $res=db("cash")->where(["uid"=>$uid,"types"=>1])->select();
+        $res=db("cash")->where(["uid"=>$uid,"types"=>1])->order("id desc")->select();
         if($res){
             $arr=[
                 'error_code'=>0,
@@ -673,7 +673,7 @@ class User extends BaseHome
     public function cash_log()
     {
         $uid=Request::instance()->header("uid");
-        $res=db("cash")->where(["uid"=>$uid,"types"=>0])->select();
+        $res=db("cash")->where(["uid"=>$uid,"types"=>0])->order("id desc")->select();
         if($res){
             $arr=[
                 'error_code'=>0,

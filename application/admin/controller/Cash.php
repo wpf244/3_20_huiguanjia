@@ -7,7 +7,7 @@ class Cash extends BaseAdmin
 {
     public function index()
     {
-        $list=db("cash")->alias("a")->field("a.*,b.nickname,b.phone")->where("a.status",0)->join("user b","a.uid=b.uid")->paginate(20);
+        $list=db("cash")->alias("a")->field("a.*,b.nickname,b.phone")->where("a.status",0)->join("user b","a.uid=b.uid")->order(["a.id desc"])->paginate(20);
         $this->assign("list",$list);
 
         $page=$list->render();
@@ -88,7 +88,7 @@ class Cash extends BaseAdmin
     }
     public function lister()
     {
-        $list=db("cash")->alias("a")->field("a.*,b.nickname,b.phone")->where("a.status",1)->join("user b","a.uid=b.uid")->paginate(20);
+        $list=db("cash")->alias("a")->field("a.*,b.nickname,b.phone")->where("a.status",1)->join("user b","a.uid=b.uid")->order(["a.id desc"])->paginate(20);
         $this->assign("list",$list);
 
         $page=$list->render();
@@ -98,7 +98,7 @@ class Cash extends BaseAdmin
     }
     public function reject()
     {
-        $list=db("cash")->alias("a")->field("a.*,b.nickname,b.phone")->where("a.status",2)->join("user b","a.uid=b.uid")->paginate(20);
+        $list=db("cash")->alias("a")->field("a.*,b.nickname,b.phone")->where("a.status",2)->join("user b","a.uid=b.uid")->order(["a.id desc"])->paginate(20);
         $this->assign("list",$list);
 
         $page=$list->render();
