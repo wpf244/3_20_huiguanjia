@@ -269,7 +269,12 @@ class User extends BaseHome
         foreach($achievement as $v){
             $data[]=$v['uid'];
         }
-        $res=db("user")->field("uid,nickname,image,phone,money")->where(["fid"=>["in",$data],"is_delete"=>0])->select();
+        if(!empty($data)){
+            $res=db("user")->field("uid,nickname,image,phone,money")->where(["fid"=>["in",$data],"is_delete"=>0])->select();
+        }else{
+            $res=[];
+        }
+        
 
         $arr=[
             'error_code'=>0,
