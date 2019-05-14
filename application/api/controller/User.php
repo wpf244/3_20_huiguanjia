@@ -319,7 +319,7 @@ class User extends BaseHome
     public function getqrcode(){
         //接收参数
         $uid = Request::instance()->header('uid');
-        $fid = Request::instance()->param('fid', 0);
+        $scene = Request::instance()->param('scene', 0);
         $page = Request::instance()->param('page', '');
 
         //微信token
@@ -329,7 +329,7 @@ class User extends BaseHome
         $url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=".$appid."&secret=".$secret;
         $results=json_decode(file_get_contents($url)); 
         //请求二维码的二进制资源
-        $post_data='{"scene":"'.$fid.'", "page":"'. $page .'"}';
+        $post_data='{"scene":"'.$scene.'", "page":"'. $page .'"}';
         $res_url="https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=".$results->access_token;
         $result=$this->httpRequest($res_url,$post_data,'POST');
         //转码为base64格式并本地保存

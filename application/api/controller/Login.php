@@ -17,7 +17,7 @@ class Login extends BaseApi
     {
         $code=input('code');
 
-        $fid = Request::instance()->param('fid', 0);
+        $fid = Request::instance()->param('scene', 0);
         if($fid != 0){
             $data['fid']=$fid;
         }
@@ -26,6 +26,7 @@ class Login extends BaseApi
         $secret = $payment['appsecret'];
         $url="https://api.weixin.qq.com/sns/jscode2session?appid=".$appid."&secret=".$secret."&js_code=".$code."&grant_type=authorization_code";
         $results=json_decode(file_get_contents($url),true);
+     //  var_dump($results);exit;
         $openid=$results['openid'];
         if(!$openid){
             $arr=[
