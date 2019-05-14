@@ -322,6 +322,8 @@ class User extends BaseHome
         $scene = Request::instance()->param('scene', 0);
         $page = Request::instance()->param('page', '');
 
+        
+
         //微信token
         $payment=db("payment")->where("id",1)->find();
         $appid = $payment['appid'];
@@ -332,12 +334,15 @@ class User extends BaseHome
         $post_data='{"scene":"'.$scene.'", "page":"'. $page .'"}';
         $res_url="https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=".$results->access_token;
         $result=$this->httpRequest($res_url,$post_data,'POST');
+        
         //转码为base64格式并本地保存
         $base64_image ="data:image/jpeg;base64,".base64_encode($result);
+
+        
         $path = 'uploads/'.uniqid().'.jpg';
         $res = $this->file_put($base64_image, $path);
-
-        //var_dump($result);exit;
+      //  var_dump($res);exit;
+        //var_dump($res);exit;
         //业务处理
         if($res){
             db('user')->where('uid', $uid)->update(['card'=>$path]);

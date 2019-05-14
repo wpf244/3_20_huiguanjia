@@ -17,7 +17,7 @@ class Login extends BaseApi
     {
         $code=input('code');
 
-        $fid = Request::instance()->param('scene', 0);
+        $fid = Request::instance()->param('fid', 0);
         if($fid != 0){
             $data['fid']=$fid;
         }
