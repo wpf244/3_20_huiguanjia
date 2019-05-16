@@ -36,7 +36,7 @@ class Hotel extends BaseApi
     {
         $url=parent::getUrl();
         $cid=input("cid");
-        $res=db("hotel")->field("id,name,addr,type,area,number,hall,image")->where(["cid"=>$cid,"is_delete"=>0,'up'=>1])->order(["sort asc","id desc"])->select();
+        $res=db("hotel")->field("id,name,addr,type,area,number,hall,image,guest")->where(["cid"=>$cid,"is_delete"=>0,'up'=>1])->order(["sort asc","id desc"])->select();
         foreach($res as $k => $v){
             $res[$k]['image']=$url.$v['image'];
         }
@@ -146,7 +146,7 @@ class Hotel extends BaseApi
         }
 
 
-        $res=db("hotel")->field("id,name,addr,type,area,number,hall,image")->where($map)->order($sorts)->select();
+        $res=db("hotel")->field("id,name,addr,type,area,number,hall,image,guest")->where($map)->order($sorts)->select();
         
         foreach($res as $k => $v){
             $res[$k]['image']=$url.$v['image'];
@@ -352,7 +352,7 @@ class Hotel extends BaseApi
         }
 
 
-        $res=db("hotel")->field("id,name,addr,type,area,number,hall,image")->where($map)->order($sorts)->select();
+        $res=db("hotel")->field("id,name,addr,type,area,number,hall,image,guest")->where($map)->order($sorts)->select();
         
         foreach($res as $k => $v){
             $res[$k]['image']=$url.$v['image'];
