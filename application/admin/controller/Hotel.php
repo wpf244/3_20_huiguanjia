@@ -5,9 +5,18 @@ class Hotel extends BaseAdmin
 {
     public function city()
     {
-        $list=db('hotel_city')->where("pid=0")->order(["c_sort asc","cid asc"])->select();
+        $list=db('hotel_city')->where("sid=0")->order(["c_sort asc","cid asc"])->select();
         foreach($list as $k => $v){
-            $list[$k]['lists']=db("hotel_city")->where("pid={$v['cid']}")->order(["c_sort asc","cid asc"])->select();
+            $list1=db("hotel_city")->where(["sid"=>$v['cid'],"pid"=>0])->order(["c_sort asc","cid asc"])->select();
+
+            $list[$k]['list1']=$list1;
+
+            foreach($list1 as $kk => $vv){
+                
+                $list2=db("hotel_city")->where("pid",$vv['cid'])->order(["c_sort asc","cid asc"])->select();
+                
+                $list[$k]['list1'][$kk]['list2']=$list2;
+            }
         }
         $this->assign("list",$list);
 
@@ -15,7 +24,7 @@ class Hotel extends BaseAdmin
     }
     public function add_city()
     {
-        $res=\db("hotel_city")->where("pid=0")->order("c_sort asc")->select();
+        $res=\db("hotel_city")->where("sid=0")->order("c_sort asc")->select();
         $this->assign("res",$res);
         
         return $this->fetch();
@@ -32,30 +41,43 @@ class Hotel extends BaseAdmin
     }
     public function modifys_city()
     {
-        $res=\db("hotel_city")->where("pid=0")->select();
+        $res=\db("hotel_city")->where("sid=0")->select();
         $this->assign("res",$res);
 
         $id=input('id');
         $re=db("hotel_city")->where("cid=$id")->find();
         $this->assign("re",$re);
+
+        $sid=$re['sid'];
+
+        $city=db("hotel_city")->where(["sid"=>$sid,"pid"=>0])->select();
+
+        $this->assign("city",$city);
         
         return $this->fetch();
     }
     public function usave_city()
     {
         $cid=input('cid');
-        $data=input('post.');
-        $re=\db("hotel_city")->where("cid=$cid")->find();
-        if($re){
-           $res=\db("hotel_city")->where("cid=$cid")->update($data);
-           if($res){
-               $this->success("修改成功",url('city'));
-           }else{
-               $this->error("修改失败",url('city'));
-           }
+        $sid=input("sid");
+        $pid=input("pid");
+        if($cid != $sid && $pid != $cid){
+            $data=input('post.');
+            $re=\db("hotel_city")->where("cid=$cid")->find();
+            if($re){
+               $res=\db("hotel_city")->where("cid=$cid")->update($data);
+               if($res){
+                   $this->success("修改成功",url('city'));
+               }else{
+                   $this->error("修改失败",url('city'));
+               }
+            }else{
+                $this->error("参数错误");
+            }
         }else{
-            $this->error("参数错误");
+            $this->error("非法操作");
         }
+        
     }
     public function change_sort()
     {
@@ -199,6 +221,9 @@ class Hotel extends BaseAdmin
     }
     public function add()
     {
+        $res=db("hotel_city")->where("sid",0)->order(["c_sort asc","cid desc"])->select();
+        $this->assign("res",$res);
+        
         $city=db("hotel_city")->where("pid",0)->order(["c_sort asc","cid desc"])->select();
         $this->assign("city",$city);
 
@@ -229,6 +254,17 @@ class Hotel extends BaseAdmin
             echo 0;
         }
     }
+    public function getnexts()
+    {
+        $sid=input("sid");
+        $re=db("hotel_city")->where(["sid"=>$sid,"pid"=>0])->order(["c_sort asc","cid desc"])->select();
+     //   var_dump($re);exit;
+        if($re){
+           echo json_encode($re);
+        }else{
+            echo 0;
+        }
+    }
     public function save()
     {
         $data=input("post.");
@@ -248,8 +284,13 @@ class Hotel extends BaseAdmin
         $id=input("id");
         $re=db("hotel")->where("id",$id)->find();
         $this->assign("re",$re);
+
+        $res=db("hotel_city")->where("sid",0)->order(["c_sort asc","cid desc"])->select();
+        $this->assign("res",$res);
+
+        $sid=$re['sid'];
         
-        $city=db("hotel_city")->where("pid",0)->order(["c_sort asc","cid desc"])->select();
+        $city=db("hotel_city")->where(["pid"=>0,"sid"=>$sid])->order(["c_sort asc","cid desc"])->select();
         $this->assign("city",$city);
 
         $citys=db("hotel_city")->where("pid",$re['cid'])->order(["c_sort asc","cid desc"])->select();

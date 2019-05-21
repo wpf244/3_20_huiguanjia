@@ -78,11 +78,14 @@
                           </button>
                         </td> 
                       </tr>
-                        {volist name="$v['lists']" id="p"}
-                            
-                            <tr class="ace-thumbnails tr{$p.pid} tri{$p.cid}" style="display:none;">
-                                <td class="center">
-                                </td>
+                        {volist name="$v['list1']" id="p"}
+
+                     
+                            <tr class="ace-thumbnails tr{$p.sid} tri{$p.cid}" style="display:none;">
+
+
+                                   <td class="center"><span class="glyphicon glyphicon-plus" power="jia" id="jiajians{$p.cid}" onclick="ggs({$p.cid})"></span>	<!-- glyphicon glyphicon-minus -->
+                        </td>
                                 <td class="ace-thumbnails hidden-480">&nbsp&nbsp&nbsp&nbsp|--{$p.c_name}</td>
                                
                                
@@ -96,6 +99,27 @@
                                     </button>
                                 </td> 
                             </tr>
+
+                            {volist name="$p['list2']" id="n"}
+
+                            <tr class="ace-thumbnails tr{$n.pid} tri{$n.cid}" style="display:none;">
+                                <td class="center">
+                                </td>
+                                <td class="ace-thumbnails hidden-480">&nbsp&nbsp&nbsp&nbsp|----{$n.c_name}</td>
+                               
+                               
+                                <td class="ace-thumbnails hidden-480"><input type="number" class="sort input-common input-common-sort" fieldid="{$n['cid']}" fieldname="c_sort" value="{$n['c_sort']}" size="1"></td>
+                                 <td>
+                                    <a class="btn btn-xs btn-info" href="{:url('Hotel/modifys_city',array('id'=>$n['cid']))}" title="修改信息">
+                                    <i class="ace-icon fa fa-pencil bigger-120"></i>
+                                    </a>
+                                    <button class="btn btn-xs btn-danger" type="button" onclick="dels({$n['cid']})" title="删除">
+                                    <i class="ace-icon fa fa-trash-o bigger-120"></i>
+                                    </button>
+                                </td> 
+                            </tr>
+
+                            {/volist}
                             
                         {/volist}
                      
@@ -204,6 +228,21 @@
 
     function gg(id){
         var ggid = $("#jiajian"+id);
+        if(ggid.attr('power') == 'jia'){
+            ggid.attr('class','glyphicon glyphicon-minus')
+            ggid.attr('power','jian')
+            $(".tr"+id).attr('style','display:black;')
+        }else{
+            ggid.attr('class','glyphicon glyphicon-plus')
+            ggid.attr('power','jia')
+            $(".tr"+id).attr('style','display:none;')
+        }
+        
+    }
+    function ggs(id){
+      // console.log(111);
+       
+        var ggid = $("#jiajians"+id);
         if(ggid.attr('power') == 'jia'){
             ggid.attr('class','glyphicon glyphicon-minus')
             ggid.attr('power','jian')
