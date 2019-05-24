@@ -325,12 +325,12 @@ class Hotel extends BaseAdmin
             }
             $res=db("hotel")->where(['id'=>$id,'is_delete'=>0])->update($data);
             if($res){
-                $this->success("修改成功",url('lister'));
+                $this->success("修改成功",url("lister"));
             }else{
-                $this->error("修改失败",url('lister'));
+                $this->error("修改失败",url("lister"));
             }
         }else{
-            $this->error("参数错误",url('lister'));
+            $this->error("参数错误",url("lister"));
         }
     }
     public function changeu(){
@@ -444,9 +444,9 @@ class Hotel extends BaseAdmin
             }
             $res=db("hotel_img")->where("id",$id)->update($data);
             if($res){
-                $this->success("修改成功！");
+                $this->success("修改成功！",url("lister"));
             }else{
-                $this->error("修改失败！");
+                $this->error("修改失败！",url("lister"));
             }
         }else{
             $data=input('post.');
@@ -459,9 +459,9 @@ class Hotel extends BaseAdmin
     
             $re=db("hotel_img")->insert($data);
             if($re){
-                $this->success("添加成功！");
+                $this->success("添加成功！",url("lister"));
             }else{
-                $this->error("添加失败！");
+                $this->error("添加失败！",url("lister"));
             }
         }
          
@@ -532,9 +532,9 @@ class Hotel extends BaseAdmin
         }
         $re=db("hotel_room")->insert($data);
         if($re){
-            $this->success("添加成功");
+            $this->success("添加成功",url("lister"));
         }else{
-            $this->error("添加失败");
+            $this->error("添加失败",url("lister"));
         }
     }
     public function modifys_room()
@@ -558,12 +558,12 @@ class Hotel extends BaseAdmin
             }
             $res=db("hotel_room")->where(["id"=>$id,"room_is_delete"=>0])->update($data);
             if($res){
-                $this->success("修改成功");
+                $this->success("修改成功",url("lister"));
             }else{
-                $this->error("修改失败");
+                $this->error("修改失败",url("lister"));
             }
         }else{
-            $this->error("参数错误");
+            $this->error("参数错误",url("lister"));
         }
 
         
@@ -633,9 +633,9 @@ class Hotel extends BaseAdmin
             }
             $res=db("room_img")->where("id",$id)->update($data);
             if($res){
-                $this->success("修改成功！");
+                $this->success("修改成功！",url("lister"));
             }else{
-                $this->error("修改失败！");
+                $this->error("修改失败！",url("lister"));
             }
         }else{
             $data=input('post.');
@@ -648,9 +648,9 @@ class Hotel extends BaseAdmin
     
             $re=db("room_img")->insert($data);
             if($re){
-                $this->success("添加成功！");
+                $this->success("添加成功！",url("lister"));
             }else{
-                $this->error("添加失败！");
+                $this->error("添加失败！",url("lister"));
             }
         }
          
