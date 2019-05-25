@@ -365,6 +365,38 @@ class Hotel extends BaseAdmin
             echo '1';
         }
     }
+    public function change_skill(){
+        $id=input('id');
+        $re=db('hotel_room')->where("id=$id")->find();
+        if($re){
+            if($re['room_skill'] == 0){
+                $res=db('hotel_room')->where("id=$id")->setField("room_skill",1);
+            }
+            if($re['room_skill'] == 1){
+                $res=db('hotel_room')->where("id=$id")->setField("room_skill",0);
+    
+            }
+            echo '0';
+        }else{
+            echo '1';
+        }
+    }
+    public function change_rebate(){
+        $id=input('id');
+        $re=db('hotel_room')->where("id=$id")->find();
+        if($re){
+            if($re['room_rebate'] == 0){
+                $res=db('hotel_room')->where("id=$id")->setField("room_rebate",1);
+            }
+            if($re['room_rebate'] == 1){
+                $res=db('hotel_room')->where("id=$id")->setField("room_rebate",0);
+    
+            }
+            echo '0';
+        }else{
+            echo '1';
+        }
+    }
     public function change(){
         $id=input('id');
         $re=db('hotel')->where("id=$id")->find();

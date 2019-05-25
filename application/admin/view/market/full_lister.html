@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+{include file="public:header"}
+
+<body class="no-skin">
+<!--头部-->
+{include file="public:nav"}
+
+<div class="main-container ace-save-state" id="main-container">
+  <!--菜单-->
+  <script type="text/javascript">
+  try{ace.settings.loadState('main-container')}catch(e){}
+</script>
+
+{include file="public:left"}
+
+  <div class="main-content">
+    <div class="main-content-inner">
+      <div class="breadcrumbs ace-save-state" id="breadcrumbs">
+        <ul class="breadcrumb">
+          <li>
+            <i class="ace-icon fa fa-home home-icon"></i>
+            <a href="{:url('Index/index')}">首页</a>
+          </li>
+          <li class="active">规则列表</li>
+        </ul>
+
+      </div>
+
+      <div id="sidebar2" class="sidebar h-sidebar navbar-collapse collapse ace-save-state">
+        <ul class="nav nav-list header-nav" id="header-nav">
+            <li>
+                <a href="{:url('Market/full')}">
+                  <o class="font12 {if condition='ACTION_NAME eq "full" '} rigbg {/if}">基础设置</o>
+                </a>
+              <b class="arrow"></b>
+            </li>
+            <li>
+              <a href="{:url('Market/full_lister')}">
+                 <o class="font12 {if condition='ACTION_NAME eq "full_lister" '} rigbg {/if}">规则列表</o>                                                      
+                </a>
+              <b class="arrow"></b>
+            </li>
+            <li>
+                <a href="{:url('Market/full_dd')}">
+                   <o class="font12 {if condition='ACTION_NAME eq "full_dd" '} rigbg {/if}">满减订单</o>                                                      
+                  </a>
+                <b class="arrow"></b>
+              </li>
+
+           
+         
+            					
+        </ul>
+      </div>
+
+      <div class="page-content">
+        {include file="public:set"}
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="col-sm-10 col-sm-offset-1">
+              <div class="page-header">
+                <div class="row">
+                <div class="col-sm-4">
+                <button class="btn btn-success btn-white btn-bold" data-toggle="modal" data-target="#add">
+                  <i class="ace-icon fa fa-plus icon-only"></i>
+                  添加</button>
+           
+                </div>
+
+                </div>
+              </div>
+              <table class="table table-bordered table-hover">
+                <thead>
+                <tr>
+                 
+                  <th>ID</th>
+                  <th>满额</th>
+                  <th>减额</th>
+               
+                  <th style="border-right:#ddd solid 1px;width:10%;" >操作</th>
+                </tr>
+                </thead>
+             
+                <tbody>
+                {volist name="list" id="v"}
+                <tr class="ace-thumbnails">
+              
+                  <td><span class="badge badge-grey">{$v.id}</span></td>
+                  <td>{$v.full}</td>
+                  <td>{$v.money}</td>
+                 
+                
+               
+                  <td>
+                      <button class="btn btn-xs btn-info" onclick="ajaxQuery('modify_full',{$v.id},readData)">
+                          修改
+                        </button>
+                    <button class="btn btn-xs btn-danger" type="button" onclick="dels({$v.id})">
+                      删除
+                    </button>
+                  </td>
+                </tr>
+                {/volist}
+                {empty name="list"}<tr><td colspan="18" class="text-center">暂无数据</td></tr>{/empty}
+                </tbody>
+            
+              </table>
+              <div class="text-center">
+                {$page}
+              </div>
+            </div>
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+      </div><!-- /.page-content -->
+    </div>
+  </div><!-- /.main-content -->
+
+  <div class="modal fade" id="add" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">添加</h4>
+          </div>
+          <div class="modal-body">
+              <form id="logoForm" class="form-horizontal" action="{:url('Market/savef')}" method="post" enctype="multipart/form-data">
+              <div class="form-group">
+                <label class="col-sm-2 control-label no-padding-right" for="">满额</label>
+                <div class="col-sm-8">
+                  <input id="full" class="form-control" type="text" name="full" required>
+                </div>
+               
+              </div>
+              <div class="form-group">
+                  <label class="col-sm-2 control-label no-padding-right" for="">减额</label>
+                  <div class="col-sm-8">
+                    <input id="money" class="form-control" type="text" name="money" required>
+                  </div>
+                  <input type="hidden" name="id" id="id" />
+                </div>
+           
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            <button  type="submit" class="btn btn-primary">保存</button>
+          </div>
+        </form>
+        </div>
+      </div>
+    </div>
+ {include file="public:footer"}
+
+<a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
+  <i class="ace-icon fa fa-angle-double-up icon-only bigger-110"></i>
+</a>
+</div><!-- /.main-container -->
+
+<script>
+  jQuery(function($) {
+    $('[data-rel=tooltip]').tooltip();
+
+    $( "#hide-option" ).tooltip({
+      hide: {
+        effect: "explode",
+        delay: 250
+      }
+    });
+
+  })
+</script>
+  <script>
+      $(function(){
+        $('#logoForm').ajaxForm({
+          beforeSubmit: checkForm, // 此方法主要是提交前执行的方法，根据需要设置
+          success: complete, // 这是提交后的方法
+          dataType: 'json'
+        });
+        
+        function checkForm(){
+          
+          
+          }
+      
+        function complete(data){
+          if(data.status==1){
+            layer.alert(data.msg, {icon: 5}, function(index){
+             layer.close(index);
+             window.location.href=data.url;
+            });
+            
+          }else{
+            layer.alert(data.msg, {icon: 6}, function(index){
+             layer.close(index);
+             window.location.href=data.url;
+            });
+            
+          }
+        }
+       
+      });
+      
+      </script>
+<script type="text/javascript">
+		function dels(id){
+			layer.confirm('你确定删除吗？', {icon: 3}, function(index){
+		    layer.close(index);
+		    $.ajax({
+         type:"post",
+         url:"{:url('Market/delete_f')}",
+         data:{id:id},
+         success:function(re)
+         {
+            if(re == 1){
+              layer.msg("删除成功");
+              setTimeout('location.reload()',2000)
+            }else{
+              layer.msg("删除失败");
+              setTimeout('location.reload()',2000)
+            }
+         }
+      })
+		  });
+	    }
+		</script>
+
+
+<script>
+//向模态框写入数据
+function readData(data) {
+    	$(".modal-title").text('修改');
+      $("#id").val(data.id);
+      $("#full").val(data.full); 
+      $("#money").val(data.money);   
+      $('#add').modal('show');
+    }
+
+    function gs() {
+      console.log(1)
+    }
+  //bs模态框关闭事件回调函数
+    $('#add').on('hidden.bs.modal', function (e) {
+  // do something...
+  $('#modal-form').get(0).reset();
+  $(".modal-title").text('添加');
+	})
+</script>
+  <script>
+  $("#change").click(function(){
+  	$("#sortForm").submit();
+  })
+
+  </script>
+</body>
+</html>

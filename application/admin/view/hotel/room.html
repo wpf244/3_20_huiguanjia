@@ -58,10 +58,14 @@
                   <th>客房类型</th>
                   <th>客房名称</th>  
                   <th>预定价格</th> 
+                  <th>秒杀价格</th>
+                  <th>折扣价格</th>
                   <th>面积</th>   
                   <th>容纳人数</th>  
                   <th class="hidden-480">缩略图</th>
                   <th>上下架</th>
+                  <th>秒杀</th>
+                  <th>限时折扣</th>
                   <th>banner图</th>
                   <th style="border-right:#ddd solid 1px;width:10%;" >操作</th>
                 </tr>
@@ -77,6 +81,8 @@
                   <td>{if condition="$v.room_type eq 1"}会议室 {else /}客房{/if}</td>
                   <td>{$v.room_name}</td>
                   <td>{$v.room_price}</td>
+                  <td>{$v.room_skill_price}</td>
+                  <td>{$v.room_rebate_price}</td>
                   <td>{$v.room_area}</td>
                   <td>{$v.room_num}</td>
                 
@@ -96,6 +102,20 @@
                       <span class="lbl"></span>
                     </label>
                   </td>
+
+                  <td>
+                      <label>
+                        <input id="statu" name="up" onclick="change_s({$v.id})" class="ace ace-switch ace-switch-6" type="checkbox" {if condition="$v.room_skill eq 1"}checked{/if} />
+                        <span class="lbl"></span>
+                      </label>
+                    </td>
+
+                    <td>
+                        <label>
+                          <input id="statu" name="up" onclick="change_r({$v.id})" class="ace ace-switch ace-switch-6" type="checkbox" {if condition="$v.room_rebate eq 1"}checked{/if} />
+                          <span class="lbl"></span>
+                        </label>
+                      </td>
               
                 
                   <td>
@@ -215,10 +235,10 @@ function changes(id){
 	    }
 	})
 }
-function changeu(id){
+function change_r(id){
 	$.ajax({
 		type:"post",
-		url:"__URL__/change_r",
+		url:"__URL__/change_rebate",
 	    data:{id:id},
 	    datatype:"text",
 	    success:function(){
@@ -226,10 +246,10 @@ function changeu(id){
 	    }
 	})
 }
-function changea(id){
+function change_s(id){
 	$.ajax({
 		type:"post",
-		url:"__URL__/changea",
+		url:"__URL__/change_skill",
 	    data:{id:id},
 	    datatype:"text",
 	    success:function(){

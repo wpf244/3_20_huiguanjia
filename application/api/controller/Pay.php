@@ -95,6 +95,28 @@ class Pay extends Controller
                            
                             $this->share($uid,$moneys);
                         }
+
+                        //是否开启订单返现
+                        $full=db("red")->where("id",5)->find();
+
+                        if($full['open'] == 1){
+                            $bili=$full['money'];
+                            $money=$re['price'];
+                            $uid=$re['uid'];
+
+                            $full_money=$money*$bili/100;
+                            //给用户增加余额
+                            db("user")->where("uid",$uid)->setInc("red_money",$full_money);
+
+                            //增加红包余额日志
+                            $full_log['uid']=$uid;
+                            $full_log['money']=$full_money;
+                            $full_log['time']=time();
+                            $full_log['type']=4;
+                            $full_log['content']="订单返现";
+
+                            db("red_log")->insert($full_log);
+                        }
                     }
                 }
                 
