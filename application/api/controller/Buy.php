@@ -236,9 +236,22 @@ class Buy extends BaseHome
     */
     public function skill_end()
     {
-        $re=db("red")->where("id",6)->setField("open",0);
+        // $re=db("red")->where("id",6)->setField("open",0);
 
-        db("hotel_room")->where("room_skill",1)->setField("room_skill",0);
+        // db("hotel_room")->where("room_skill",1)->setField("room_skill",0);
+
+        $re=db("red")->where("id",6)->find();
+
+        $time=time();
+
+        $end_time=$re['end_time'];
+
+        if($time >= $end_time){
+
+            $re=db("red")->where("id",6)->setField("open",0);
+
+           // db("hotel_room")->where("room_rebate",1)->setField("room_skill",0);
+        }
     }
     /**
     * 折扣
@@ -355,9 +368,20 @@ class Buy extends BaseHome
     */
     public function rebate_end()
     {
-        $re=db("red")->where("id",7)->setField("open",0);
+        
+        $re=db("red")->where("id",7)->find();
 
-        db("hotel_room")->where("room_rebate",1)->setField("room_rebate",0);
+        $time=time();
+
+        $end_time=$re['end_time'];
+
+        if($time >= $end_time){
+
+            $re=db("red")->where("id",7)->setField("open",0);
+
+           // db("hotel_room")->where("room_rebate",1)->setField("room_rebate",0);
+        }
+
     }
 
 
