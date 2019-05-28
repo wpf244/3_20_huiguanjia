@@ -60,40 +60,30 @@
           <div class="col-xs-12">
             <div class="col-sm-10 col-sm-offset-1">
               <div class="page-header">
-                <div class="row">
-                <div class="col-sm-4">
-                <!-- <a class="btn btn-success btn-white btn-bold" href="{:url('News/add')}">
-                  <i class="ace-icon fa fa-plus icon-only"></i>
-                  添加</a>
-                <button id="change" class="btn btn-warning btn-white btn-bold">
-                  <i class="fa fa-exchange"></i>
-                  排序
-                </button>
-                <button class="btn btn-danger btn-white btn-bold del-btn">
-                  <i class="ace-icon fa fa-trash-o icon-only"></i>
-                  删除
-                </button> -->
-                </div>
-
-                 <!-- <div class="col-sm-8 clearfix">
-                  <form class="form-inline pull-right" action="{:url('News/lister')}">
-                
-                    <div class="form-group">
-                      <div class="input-group">
-									<span class="input-group-addon">
-										<i class="ace-icon fa fa-check"></i>
-									</span>
-                        <input type="text" name="key"  class="form-control search-query" value="" placeholder="请输入需查询的关键字">
-                        <span class="input-group-btn">
-										<button type="submit" class="btn btn-info btn-sm ajax-search-form">
-											<span class="ace-icon fa fa-search icon-on-right bigger-120"></span> 搜索
-									</button>
-									</span>
-                      </div>
-                    </div>
-                  </form>
-                </div> -->
-                </div>
+                  <div class="row">
+                      <div class="col-sm-2">
+                        <a class="btn btn-success btn-white btn-bold" href="javascript:;" id="out">
+                          <i class="ace-icon fa fa-plus icon-only"></i>
+                          导出excel</a>
+                        </div> 
+        
+                         <div class="col-sm-10 clearfix">
+                          <form class="form-inline pull-right" action="__URL__/hotel_apply" method="get">
+         
+                            <div class="form-group">
+                              <input type="hidden" name="status" value="{$status}" />
+                              <div class="input-group">
+                                <input type="text" name="key"  class="form-control search-query" value="{$keywords}" placeholder="请输入要查询的关键字">
+                                <span class="input-group-btn">
+                            <button type="submit" class="btn btn-info btn-sm ajax-search-form">
+                              <span class="ace-icon fa fa-search icon-on-right bigger-120"></span> 搜索
+                          </button>
+                          </span>
+                              </div>
+                            </div>
+                          </form>
+                        </div> 
+                        </div>
               </div>
               <table class="table table-bordered table-hover">
                 <thead>
@@ -103,6 +93,7 @@
                   <th>用户昵称</th>                               
                   <th>法人姓名</th>
                   <th>身份证号码</th>
+                  <th>公司名称</th>
                   <th>酒店名称</th>
                   <th>详细地址</th>
                   <th>所属类型</th>
@@ -121,6 +112,7 @@
                   <td>{$v.nickname} </td>
                   <td>{$v.username} </td>
                   <td>{$v.idcode} </td>
+                  <td>{$v.company} </td>
                   <td>{$v.name} </td>
                   <td>{$v.addr} </td>
                   <td>{$v.genre} </td>
@@ -160,7 +152,15 @@
   <i class="ace-icon fa fa-angle-double-up icon-only bigger-110"></i>
 </a>
 </div><!-- /.main-container -->
+<script>
+    $("#out").click(function(){
 
+      var key="{$keywords}";
+      var status="{$status}";
+      
+      location.href="__URL__/outr/key/"+key+"/status/"+status;
+    })
+   </script>
 <script>
   jQuery(function($) {
     $('[data-rel=tooltip]').tooltip();

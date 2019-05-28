@@ -8,7 +8,21 @@ class Member extends BaseAdmin
 {
     public function lister()
     {
-        $list=db("user")->where(['status'=>1,'is_delete'=>0])->order("uid desc")->paginate(10);
+        
+        $key=input("key");
+
+        if($key){
+
+            $map["nickname|phone|company"]=["like","%".$key."%"];
+
+        }else{
+            $key="";
+            $map=[];
+        }
+         $this->assign("keywords",$key);
+
+        
+        $list=db("user")->where(['status'=>1,'is_delete'=>0])->where($map)->order("uid desc")->paginate(20,false,['query'=>request()->param()]);
         
         $res = [];
         foreach($list as $v){
@@ -19,6 +33,98 @@ class Member extends BaseAdmin
         $page=$list->render();
         $this->assign("page",$page);   
         return $this->fetch();
+    }
+
+    public function out(){
+        $key=input("key");
+
+        if($key){
+
+            $map["nickname|phone|company"]=["like","%".$key."%"];
+
+        }else{
+        
+            $map=[];
+        }
+         
+        $list=db("user")->where(['status'=>1,'is_delete'=>0])->where($map)->order("uid desc")->select();
+        // var_dump($data);exit;
+        vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
+        vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
+        vendor('PHPExcel.PHPExcel.Writer.Excel2007');
+        $objExcel = new \PHPExcel();
+        //set document Property
+        $objWriter = \PHPExcel_IOFactory::createWriter($objExcel, 'Excel2007');
+    
+        $objActSheet = $objExcel->getActiveSheet();
+        $key = ord("A");
+        $letter =explode(',',"A,B,C,D,E,F,G");
+        $arrHeader =  array("会员名","手机号码","公司名称","佣金","红包余额","等级","注册时间");
+        //填充表头信息
+        $lenth =  count($arrHeader);
+        for($i = 0;$i < $lenth;$i++) {
+            $objActSheet->setCellValue("$letter[$i]1","$arrHeader[$i]");
+        }
+        //填充表格信息
+        foreach($list as $k=>$v){
+            $k +=2;
+
+            if($v['level'] == 1){
+                $level="公司";
+            }
+            if($v['level'] == 2){
+                $level="销售经理";
+            }
+            if($v['level'] == 3){
+                $level="入驻酒店";
+            }
+
+            $objActSheet->setCellValue('A'.$k,$v['nickname']);
+            $objActSheet->setCellValue('B'.$k, $v['phone']);    
+            // 表格内容
+            $objActSheet->setCellValue('C'.$k, $v['company']);
+            $objActSheet->setCellValue('D'.$k, $v['money']);
+            $objActSheet->setCellValue('E'.$k, $v['red_money']);
+            $objActSheet->setCellValue('F'.$k, $level);
+            $objActSheet->setCellValue('G'.$k, \date("Y-m-d H:i:s",$v['time']));
+         
+
+    
+            // 表格高度
+            $objActSheet->getRowDimension($k)->setRowHeight(20);
+        }
+    
+        $width = array(20,20,15,10,10,30,10,15,15,15);
+        //设置表格的宽度
+        $objActSheet->getColumnDimension('A')->setWidth(20);
+        $objActSheet->getColumnDimension('B')->setWidth(20);
+        $objActSheet->getColumnDimension('C')->setWidth(25);
+        $objActSheet->getColumnDimension('D')->setWidth(25);
+        $objActSheet->getColumnDimension('E')->setWidth(25);
+        $objActSheet->getColumnDimension('F')->setWidth(30);
+        $objActSheet->getColumnDimension('G')->setWidth(30);
+  
+  
+        $outfile = "会员列表".".xls";
+    
+        $userBrowser=$_SERVER['HTTP_USER_AGENT'];
+        
+        if(preg_match('/MSIE/i', $userBrowser)){
+            $outfile=urlencode($outfile);
+           
+        }else{
+            $outfile= iconv("utf-8","gb2312",$outfile);;
+            
+        }
+        ob_end_clean();
+        header("Content-Type: application/force-download");
+        header("Content-Type: application/octet-stream");
+        header("Content-Type: application/download");
+        header('Content-Disposition:inline;filename="'.$outfile.'"');
+        header("Content-Transfer-Encoding: binary");
+        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+        header("Pragma: no-cache");
+        $objWriter->save('php://output');
     }
 
 /**
@@ -44,7 +150,7 @@ class Member extends BaseAdmin
         if($res){
             $level = db('user')->where('uid', $uid)->value('level');
             if($level == 1){
-                $level_name = '普通会员';
+                $level_name = '公司';
             }elseif($level == 2){
                 $level_name = '销售经理';
             }else{
@@ -244,22 +350,131 @@ class Member extends BaseAdmin
     public function apply()
     {
         $status=input("status");
-        if($status){
+       
+        $key=input("key");
+
+        if($key || $status){
+           if($key){
+            $map["name|u_phone"]=["like","%".$key."%"];
+           }
+           if($status){
             $map['u_status']=['eq',$status];
+           }
+
+           
+
         }else{
+            $key="";
             $status=0;
+            $map=[];
         }
         $map['type']=['eq',0];
-        $list=db("user_apply")->alias("a")->field("a.*,b.nickname")->where($map)->join("user b","a.u_id=b.uid")->order("id desc")->paginate(10);
+        $this->assign("keywords",$key);
+        $this->assign("status",$status);
+
+      //  var_dump($status);
+
+        $list=db("user_apply")->alias("a")->field("a.*,b.nickname")->where($map)->join("user b","a.u_id=b.uid")->order("id desc")->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
 
         $page=$list->render();
         $this->assign("page",$page);
 
-        $this->assign("status",$status);
+        
 
         return $this->fetch();
     }
+
+    public function outx(){
+        $status=input("status");
+       
+        
+
+        $key=input("key");
+
+        if($key || $status){
+
+            if($key){
+                $map["name|u_phone"]=["like","%".$key."%"];
+               }
+               if($status){
+                $map['u_status']=['eq',$status];
+               }
+
+        }else{
+            $key="";
+            $status=0;
+            $map=[];
+        }
+        $map['type']=['eq',0];
+         
+        $list=db("user_apply")->alias("a")->field("a.*,b.nickname")->where($map)->join("user b","a.u_id=b.uid")->order("id desc")->select();
+        // var_dump($data);exit;
+        vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
+        vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
+        vendor('PHPExcel.PHPExcel.Writer.Excel2007');
+        $objExcel = new \PHPExcel();
+        //set document Property
+        $objWriter = \PHPExcel_IOFactory::createWriter($objExcel, 'Excel2007');
+    
+        $objActSheet = $objExcel->getActiveSheet();
+        $key = ord("A");
+        $letter =explode(',',"A,B,C,D");
+        $arrHeader =  array("会员名","手机号码","酒店名称","申请时间");
+        //填充表头信息
+        $lenth =  count($arrHeader);
+        for($i = 0;$i < $lenth;$i++) {
+            $objActSheet->setCellValue("$letter[$i]1","$arrHeader[$i]");
+        }
+        //填充表格信息
+        foreach($list as $k=>$v){
+            $k +=2;
+
+
+            $objActSheet->setCellValue('A'.$k,$v['nickname']);
+            $objActSheet->setCellValue('B'.$k, $v['u_phone']);    
+            // 表格内容
+            $objActSheet->setCellValue('C'.$k, $v['name']);
+         
+            $objActSheet->setCellValue('D'.$k, \date("Y-m-d H:i:s",$v['u_time']));
+         
+
+    
+            // 表格高度
+            $objActSheet->getRowDimension($k)->setRowHeight(20);
+        }
+    
+        $width = array(20,20,15,10,10,30,10,15,15,15);
+        //设置表格的宽度
+        $objActSheet->getColumnDimension('A')->setWidth(20);
+        $objActSheet->getColumnDimension('B')->setWidth(20);
+        $objActSheet->getColumnDimension('C')->setWidth(25);
+        $objActSheet->getColumnDimension('D')->setWidth(25);
+     
+  
+  
+        $outfile = "销售经理".".xls";
+    
+        $userBrowser=$_SERVER['HTTP_USER_AGENT'];
+        
+        if(preg_match('/MSIE/i', $userBrowser)){
+            $outfile=urlencode($outfile);
+           
+        }else{
+            $outfile= iconv("utf-8","gb2312",$outfile);;
+            
+        }
+        ob_end_clean();
+        header("Content-Type: application/force-download");
+        header("Content-Type: application/octet-stream");
+        header("Content-Type: application/download");
+        header('Content-Disposition:inline;filename="'.$outfile.'"');
+        header("Content-Transfer-Encoding: binary");
+        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+        header("Pragma: no-cache");
+        $objWriter->save('php://output');
+    }
+
     /**
     * 通过审核
     *
@@ -327,21 +542,137 @@ class Member extends BaseAdmin
     public function hotel_apply()
     {
         $status=input("status");
-        if($status){
+       
+        $key=input("key");
+
+        if($key || $status){
+           if($key){
+            $map["username|idcode|a.company|name|addr|genre|u_phone"]=["like","%".$key."%"];
+           }
+           if($status){
             $map['u_status']=['eq',$status];
+           }
+
+           
+
         }else{
+            $key="";
             $status=0;
+            $map=[];
         }
         $map['type']=['eq',1];
+        $this->assign("keywords",$key);
+        $this->assign("status",$status);
+
+     //   $map['type']=['eq',1];
         $list=db("user_apply")->alias("a")->field("a.*,b.nickname")->where($map)->join("user b","a.u_id=b.uid")->order("id desc")->paginate(10);
         $this->assign("list",$list);
 
         $page=$list->render();
         $this->assign("page",$page);
 
-        $this->assign("status",$status);
+       // $this->assign("status",$status);
 
         return $this->fetch();
+    }
+
+    public function outr(){
+        $status=input("status");
+       
+        $key=input("key");
+
+        if($key || $status){
+           if($key){
+            $map["username|idcode|a.company|name|addr|genre|u_phone"]=["like","%".$key."%"];
+           }
+           if($status){
+            $map['u_status']=['eq',$status];
+           }
+
+           
+
+        }else{
+            $key="";
+            $status=0;
+            $map=[];
+        }
+        $map['type']=['eq',1];
+         
+        $list=db("user_apply")->alias("a")->field("a.*,b.nickname")->where($map)->join("user b","a.u_id=b.uid")->order("id desc")->select();
+        // var_dump($data);exit;
+        vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
+        vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
+        vendor('PHPExcel.PHPExcel.Writer.Excel2007');
+        $objExcel = new \PHPExcel();
+        //set document Property
+        $objWriter = \PHPExcel_IOFactory::createWriter($objExcel, 'Excel2007');
+    
+        $objActSheet = $objExcel->getActiveSheet();
+        $key = ord("A");
+        $letter =explode(',',"A,B,C,D,E,F,G,H,I");
+        $arrHeader =  array("会员名","法人姓名","身份证号","公司名称","酒店名称","详细地址","酒店类型","联系方式","申请时间");
+        //填充表头信息
+        $lenth =  count($arrHeader);
+        for($i = 0;$i < $lenth;$i++) {
+            $objActSheet->setCellValue("$letter[$i]1","$arrHeader[$i]");
+        }
+        //填充表格信息
+        foreach($list as $k=>$v){
+            $k +=2;
+
+
+            $objActSheet->setCellValue('A'.$k,$v['nickname']);
+            $objActSheet->setCellValue('B'.$k, $v['username']);    
+            // 表格内容
+            $objActSheet->setCellValue('C'.$k, $v['idcode']);
+            $objActSheet->setCellValue('D'.$k, $v['company']);
+            $objActSheet->setCellValue('E'.$k, $v['name']);
+            $objActSheet->setCellValue('F'.$k, $v['addr']);
+            $objActSheet->setCellValue('G'.$k, $v['genre']);
+            $objActSheet->setCellValue('H'.$k, $v['u_phone']);
+         
+            $objActSheet->setCellValue('I'.$k, \date("Y-m-d H:i:s",$v['u_time']));
+         
+
+    
+            // 表格高度
+            $objActSheet->getRowDimension($k)->setRowHeight(20);
+        }
+    
+        $width = array(20,20,15,10,10,30,10,15,15,15);
+        //设置表格的宽度
+        $objActSheet->getColumnDimension('A')->setWidth(20);
+        $objActSheet->getColumnDimension('B')->setWidth(20);
+        $objActSheet->getColumnDimension('C')->setWidth(25);
+        $objActSheet->getColumnDimension('D')->setWidth(25);
+        $objActSheet->getColumnDimension('E')->setWidth(25);
+        $objActSheet->getColumnDimension('F')->setWidth(25);
+        $objActSheet->getColumnDimension('G')->setWidth(25);
+        $objActSheet->getColumnDimension('H')->setWidth(25);
+        $objActSheet->getColumnDimension('I')->setWidth(25);
+     
+  
+  
+        $outfile = "入驻酒店".".xls";
+    
+        $userBrowser=$_SERVER['HTTP_USER_AGENT'];
+        
+        if(preg_match('/MSIE/i', $userBrowser)){
+            $outfile=urlencode($outfile);
+           
+        }else{
+            $outfile= iconv("utf-8","gb2312",$outfile);;
+            
+        }
+        ob_end_clean();
+        header("Content-Type: application/force-download");
+        header("Content-Type: application/octet-stream");
+        header("Content-Type: application/download");
+        header('Content-Disposition:inline;filename="'.$outfile.'"');
+        header("Content-Transfer-Encoding: binary");
+        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+        header("Pragma: no-cache");
+        $objWriter->save('php://output');
     }
     /**
     * 通过审核

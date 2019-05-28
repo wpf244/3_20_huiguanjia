@@ -125,9 +125,12 @@ class Login extends BaseApi
     {
         $uid=Request::instance()->header("uid");
         $level=input("level");
-        $data=input("post.");
+       // $data=input("post.");
         $data['status']=1;
         $data['level']=1;
+        $data['phone']=input("phone");
+        $data['pwd']=input("pwd");
+        $data['company']=input("company");
         $phone=input("phone");
         $reu=db("user")->where("phone",$phone)->find();
         $code=input("code");
@@ -147,13 +150,16 @@ class Login extends BaseApi
                 }else{
                     $user=db("user")->where("uid",$uid)->find();
                     if($user){
-                    unset($data['code']);
+                 
                     if($level == 2){
                         
                         $res=db("user")->where("uid",$uid)->update($data);
                         $datas['u_id']=$uid;
                         $datas['u_phone']=$phone;
                         $datas['u_level']=$level;
+                    //    $datas['company']=input("company"); //公司名称
+                        $datas['name']=input("name"); //酒店名称
+                        $datas['image']=input("image");
                         $datas['u_time']=time();
                         db("user_apply")->insert($datas);
                         if($res){
@@ -162,16 +168,45 @@ class Login extends BaseApi
                                     'msg'=>'注册成功',
                                     'data'=>''
                                 ]; 
+                            }else{
+                                $arr=[
+                                    'error_code'=>4,
+                                    'msg'=>'注册失败',
+                                    'data'=>''
+                                ]; 
+                        }
+                                
+                        }elseif($level == 3){
+                                $res=db("user")->where("uid",$uid)->update($data);
+                                $datass['u_id']=$uid;
+                                $datass['username']=input("username");
+                                $datass['idcode']=input("idcode");
+                                $datass['addr']=input("addr");
+                                $datass['genre']=input("genre");
+                                $datass['u_phone']=$phone;
+                                $datass['u_level']=3;
+                                $datass['type']=1;
+                                $datass['u_time']=time();
+                               $datass['company']=input("company"); //公司名称
+                                $datass['name']=input("name"); //酒店名称
+                                $datass['u_time']=time();
+                                db("user_apply")->insert($datass);
+
+                                if($res){
+                                    $arr=[
+                                        'error_code'=>0,
+                                        'msg'=>'注册成功',
+                                        'data'=>''
+                                    ]; 
                                 }else{
                                     $arr=[
                                         'error_code'=>4,
                                         'msg'=>'注册失败',
                                         'data'=>''
                                     ]; 
-                                }
-                                
+                                 }
                             }else{
-                            
+                                $data['company']=input("company");
                                 $res=db("user")->where("uid",$uid)->update($data);
                                 if($res){
                                     $arr=[
@@ -341,6 +376,46 @@ class Login extends BaseApi
             ]; 
         }
         echo json_encode($arr);
+    }
+    /**
+    * 上传图片
+    *
+    * @return void
+    */
+    public function add_img(){
+        if(!is_string(input('image'))){
+            $image=uploads('image');
+        }
+        if($image){
+            $arr=$image;
+        }else{
+            $arr="发布失败";
+        }
+        echo $arr;
+    }
+    /**
+    * 申请加入
+    *
+    * @return void
+    */
+    public function apply()
+    {
+        $genre=db("lb")->field("name")->where(['fid'=>4,'status'=>1])->order(["id asc","sort asc"])->select();
+
+        $tips=db("lb")->field("desc")->where("fid",5)->find();
+        
+        $tips['desc']=strip_tags($tips['desc']);
+
+        $arr=[
+            'error_code'=>0,
+            'msg'=>"获取成功",
+            'data'=>[
+                'genre'=>$genre,
+                'tips'=>$tips,
+            ]
+        ];
+
+        echo \json_encode($arr);
     }
    
 }
