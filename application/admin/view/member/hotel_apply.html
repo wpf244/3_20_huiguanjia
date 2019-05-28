@@ -95,6 +95,7 @@
                   <th>身份证号码</th>
                   <th>公司名称</th>
                   <th>酒店名称</th>
+                  <th>营业执照</th>
                   <th>详细地址</th>
                   <th>所属类型</th>
                   <th>联系方式</th>
@@ -114,6 +115,14 @@
                   <td>{$v.idcode} </td>
                   <td>{$v.company} </td>
                   <td>{$v.name} </td>
+                  <td class="ace-thumbnails hidden-480">
+                    <li><a href="{$v.image}" data-rel="colorbox">
+                      <img width="80" height="80" alt="150x150" src="{$v.image}"/>
+                      <div class="text">
+                        <div class="inner">点击放大</div>
+                      </div>
+                    </a></li>
+                  </td>
                   <td>{$v.addr} </td>
                   <td>{$v.genre} </td>
                   <td>{$v.u_phone} </td>

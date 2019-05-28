@@ -189,6 +189,7 @@ class Login extends BaseApi
                                 $datass['u_time']=time();
                                $datass['company']=input("company"); //公司名称
                                 $datass['name']=input("name"); //酒店名称
+                                $datass['image']=input("image");
                                 $datass['u_time']=time();
                                 db("user_apply")->insert($datass);
 
