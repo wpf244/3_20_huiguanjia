@@ -124,10 +124,12 @@ class Login extends BaseApi
     public function save()
     {
         $uid=Request::instance()->header("uid");
+
+       // var_dump($uid);exit;
         $level=input("level");
        // $data=input("post.");
         $data['status']=1;
-        $data['level']=1;
+       $data['level']=1;
         $data['phone']=input("phone");
         $data['pwd']=input("pwd");
         $data['company']=input("company");
