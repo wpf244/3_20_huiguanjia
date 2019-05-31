@@ -71,8 +71,20 @@ class User extends BaseHome
         $data['u_level']=3;
         $data['type']=1;
         $data['u_time']=time();
+        $data['image']=input("image");
 
-        $re=db("user_apply")->insert($data);
+        $res=db("user_apply")->where(['u_id'=>$uid,'type'=>1])->find();
+
+        if($res){
+            if(empty($data['image'])){
+                $data['image']=$res['image'];
+            }
+            $re=db("user_apply")->where("id",$res['id'])->update($data);
+        }else{
+            $re=db("user_apply")->insert($data);
+        }
+
+        
 
         if($re){
             $arr=[
@@ -96,23 +108,42 @@ class User extends BaseHome
     */
     public function change_apply()
     {
+        
+        $url=parent::getUrl();
+
         $uid=Request::instance()->header('uid');
 
-        $re=db("user_apply")->where(['rebut_look'=>0,'u_id'=>$uid])->find();
+        $user=db("user")->where("uid",$uid)->find();
 
-        if($re){
+        if($user['level'] == 3){
             $arr=[
-                'error_code'=>0,
-                'msg'=>"已经提交申请了,去查看详情",
-                'data'=>''
+                'error_code'=>2,
+                'msg'=>"已经是入住酒店啦",
+                'data'=>[]
             ];
         }else{
-            $arr=[
-                'error_code'=>1,
-                'msg'=>"没有提交申请,去提交",
-                'data'=>''
-            ];
+
+            $re=db("user_apply")->where(['u_id'=>$uid,'type'=>1])->find();
+
+            $re['image']=$url.$re['image'];
+
+            if($re){
+                $arr=[
+                    'error_code'=>0,
+                    'msg'=>"已经提交申请了",
+                    'data'=>$re
+                ];
+            }else{
+                $arr=[
+                    'error_code'=>1,
+                    'msg'=>"没有提交申请",
+                    'data'=>[]
+                ];
+            }
+
         }
+
+        
         echo \json_encode($arr);
     }
     /**

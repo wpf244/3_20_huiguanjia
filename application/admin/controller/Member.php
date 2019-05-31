@@ -583,7 +583,7 @@ class Member extends BaseAdmin
 
         if($key || $status){
            if($key){
-            $map["username|idcode|a.company|name|addr|genre|u_phone"]=["like","%".$key."%"];
+            $map["username|idcode|name|addr|genre|u_phone"]=["like","%".$key."%"];
            }
            if($status){
             $map['u_status']=['eq',$status];
@@ -609,8 +609,8 @@ class Member extends BaseAdmin
     
         $objActSheet = $objExcel->getActiveSheet();
         $key = ord("A");
-        $letter =explode(',',"A,B,C,D,E,F,G,H,I");
-        $arrHeader =  array("会员名","法人姓名","身份证号","公司名称","酒店名称","详细地址","酒店类型","联系方式","申请时间");
+        $letter =explode(',',"A,B,C,D,E,F,G,H");
+        $arrHeader =  array("会员名","法人姓名","身份证号","酒店名称","详细地址","酒店类型","联系方式","申请时间");
         //填充表头信息
         $lenth =  count($arrHeader);
         for($i = 0;$i < $lenth;$i++) {
@@ -625,13 +625,13 @@ class Member extends BaseAdmin
             $objActSheet->setCellValue('B'.$k, $v['username']);    
             // 表格内容
             $objActSheet->setCellValue('C'.$k, $v['idcode']);
-            $objActSheet->setCellValue('D'.$k, $v['company']);
-            $objActSheet->setCellValue('E'.$k, $v['name']);
-            $objActSheet->setCellValue('F'.$k, $v['addr']);
-            $objActSheet->setCellValue('G'.$k, $v['genre']);
-            $objActSheet->setCellValue('H'.$k, $v['u_phone']);
+        
+            $objActSheet->setCellValue('D'.$k, $v['name']);
+            $objActSheet->setCellValue('E'.$k, $v['addr']);
+            $objActSheet->setCellValue('F'.$k, $v['genre']);
+            $objActSheet->setCellValue('G'.$k, $v['u_phone']);
          
-            $objActSheet->setCellValue('I'.$k, \date("Y-m-d H:i:s",$v['u_time']));
+            $objActSheet->setCellValue('H'.$k, \date("Y-m-d H:i:s",$v['u_time']));
          
 
     
@@ -649,7 +649,7 @@ class Member extends BaseAdmin
         $objActSheet->getColumnDimension('F')->setWidth(25);
         $objActSheet->getColumnDimension('G')->setWidth(25);
         $objActSheet->getColumnDimension('H')->setWidth(25);
-        $objActSheet->getColumnDimension('I')->setWidth(25);
+     
      
   
   
