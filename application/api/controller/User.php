@@ -125,9 +125,10 @@ class User extends BaseHome
 
             $re=db("user_apply")->where(['u_id'=>$uid,'type'=>1])->find();
 
-            $re['image']=$url.$re['image'];
+            
 
             if($re){
+                $re['image']=$url.$re['image'];
                 $arr=[
                     'error_code'=>0,
                     'msg'=>"已经提交申请了",
