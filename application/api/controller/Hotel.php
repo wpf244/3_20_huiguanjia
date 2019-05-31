@@ -351,11 +351,15 @@ class Hotel extends BaseApi
             $sorts=["sort asc","id desc"];
         }
 
+        
+        $longs=input("longs");
+        $lats=input("lats");
 
-        $res=db("hotel")->field("id,name,addr,type,area,number,hall,image,guest")->where($map)->order($sorts)->select();
+        $res=db("hotel")->field("id,name,addr,type,area,number,hall,image,guest,lats,longs")->where($map)->order($sorts)->select();
         
         foreach($res as $k => $v){
             $res[$k]['image']=$url.$v['image'];
+            $res[$k]['gap']=$this->getDistance($lats,$longs,$v['lats'],$v['longs']);
         }
        
         if($res){
@@ -372,6 +376,34 @@ class Hotel extends BaseApi
             ];
         }
         echo \json_encode($arr);
+    }
+    /**
+    * @param $lat1
+    * @param $lng1
+    * @param $lat2
+    * @param $lng2
+    * @return int
+    */
+    function getDistance($lat1, $lng1, $lat2, $lng2){
+
+        //将角度转为狐度
+
+        $radLat1=deg2rad($lat1);//deg2rad()函数将角度转换为弧度
+
+        $radLat2=deg2rad($lat2);
+
+        $radLng1=deg2rad($lng1);
+
+        $radLng2=deg2rad($lng2);
+
+        $a=$radLat1-$radLat2;
+
+        $b=$radLng1-$radLng2;
+
+        $s=2*asin(sqrt(pow(sin($a/2),2)+cos($radLat1)*cos($radLat2)*pow(sin($b/2),2)))*6378.137;
+
+        return $s;
+
     }
 
 
