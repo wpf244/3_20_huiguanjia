@@ -279,6 +279,36 @@ class Hotel extends BaseAdmin
             $this->error("添加失败");
         }
     }
+    public function query_address(){
+        $key_words=input("addr");
+        $header[] = 'Referer: http://lbs.qq.com/webservice_v1/guide-suggestion.html';
+        $header[] = 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36';
+        $url ="http://apis.map.qq.com/ws/place/v1/suggestion/?&region=&key=OB4BZ-D4W3U-B7VVO-4PJWW-6TKDJ-WPB77&keyword=".$key_words; 
+ 
+        $ch = curl_init();
+        //设置选项，包括URL
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch,CURLOPT_HTTPHEADER,$header);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+ 
+        //执行并获取HTML文档内容
+        $output = curl_exec($ch);
+        
+        curl_close($ch);
+        
+        $result = json_decode($output,true);
+
+        if(!empty($result['data'][0])){
+            return $result['data'][0]['location'];
+        }else{
+            echo '0';
+        }
+        
+      
+       
+
+    }
     public function modifys()
     {
         $id=input("id");
