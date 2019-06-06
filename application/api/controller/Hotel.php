@@ -55,6 +55,27 @@ class Hotel extends BaseApi
         }
         echo \json_encode($arr);
     }
+    public function get_cid()
+    {
+       
+            $cname=input("cname");
+            $re=db("hotel_city")->where(["c_name"=>["like","%".$cname."%"]])->find();
+
+            if($re){
+                $cid=$re['cid'];
+            }else{
+                $cid=0;
+            }
+            $arr=[
+                'error_code'=>0,
+                'msg'=>'获取成功',
+                'data'=>[
+                    'cid'=>$cid
+                ]
+            ];
+            echo \json_encode($arr);
+
+    }
     /**
     * 搜索条件
     *
@@ -63,6 +84,7 @@ class Hotel extends BaseApi
     public function serach_term()
     {
         $cid=input("cid");
+       
         //区域列表
         $city=db("hotel_city")->where(["pid"=>$cid])->order(["c_sort asc","cid desc"])->select();
 
