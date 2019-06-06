@@ -22,7 +22,7 @@
             <i class="ace-icon fa fa-home home-icon"></i>
             <a href="{:url('Index/index')}">首页</a>
           </li>
-          <li class="active">会员列表</li>
+          <li class="active">下级会员列表</li>
         </ul><!-- /.breadcrumb -->
 
       </div>
@@ -34,28 +34,7 @@
             <div class="col-sm-10 col-sm-offset-1">
               <div class="page-header">
                   <div class="row">
-                      <div class="col-sm-2">
-                        <a class="btn btn-success btn-white btn-bold" href="javascript:;" id="out">
-                          <i class="ace-icon fa fa-plus icon-only"></i>
-                          导出excel</a>
-                        </div> 
-        
-                         <div class="col-sm-10 clearfix">
-                          <form class="form-inline pull-right" action="__URL__/lister" method="post">
-         
-                            <div class="form-group">
-                           
-                              <div class="input-group">
-                                <input type="text" name="key"  class="form-control search-query" value="{$keywords}" placeholder="请输入要查询的关键字">
-                                <span class="input-group-btn">
-                            <button type="submit" class="btn btn-info btn-sm ajax-search-form">
-                              <span class="ace-icon fa fa-search icon-on-right bigger-120"></span> 搜索
-                          </button>
-                          </span>
-                              </div>
-                            </div>
-                          </form>
-                        </div> 
+                  
                         </div>
               </div>
               <table class="table table-bordered table-hover">
@@ -66,17 +45,15 @@
                   <th class="hidden-480">手机号码</th>
                   <th class="hidden-480">公司名称</th>
                   <th class="hidden-480">头像</th>
-                  <th class="hidden-480">佣金</th>
-                  <th class="hidden-480">红包余额</th>
+                 
                   <th class="hidden-480">等级</th>
-                  <th class="hidden-480">上级会员</th>
-                  <th class="hidden-480">下级会员</th>
+                
                   <th class="hidden-480">注册时间</th>
-                  <th style="border-right:#ddd solid 1px;">操作</th>
+                  <th class="hidden-480">类型</th>
                 </tr>
                 </thead>
                 <tbody>
-                {volist name="list" id="v"}
+                {volist name="res" id="v"}
                 <tr class="ace-thumbnails">
               
                   <td><span class="badge badge-grey">{$v.uid}</span></td>
@@ -89,43 +66,65 @@
                      
                     </li>
                   </td>
-                  <td>{$v.money}<i class="ace-icon fa fa-pencil bigger-120" onclick="change_money({$v.uid})"></i></td>
-                  <td>{$v.red_money}</td>
+              
                   <td class="hidden-480">
-                      <i class="ace-icon fa fa-chevron-circle-down bigger-120" onclick="level_change('down', {$v.uid})"></i>
-                      <span id="level{$v.uid}">
+                
                           {if condition="$v.level == 1"}公司{elseif condition="$v.level == 2"}销售经理{else /}入驻酒店{/if}
-                      </span>
-                      <i class="ace-icon fa fa-chevron-circle-up bigger-120" onclick="level_change('up', {$v.uid})"></i>
+                
                   </td>
-                  <td class="hidden-480">{$v.pid_user}</td>
-                  <td>
-                  <a class="btn btn-xs btn-info" href="{:url('Member/look',array('id'=>$v['uid']))}" title="查看">
-                    查看
-                  </a>
-                  </td>
+               
+              
                   <td class="hidden-480">{$v.time|date="Y-m-d H:i:s",###}</td>
-                  <td>
-                   
-                    <a class="btn btn-xs btn-info" href="{:url('Member/money_log',array('id'=>$v['uid']))}" title="修改">
-                      佣金日志
-                    </a>
-                    <a class="btn btn-xs btn-info" href="{:url('Member/red_money_log',array('id'=>$v['uid']))}" title="修改">
-                      红包日志
-                    </a>
-                    <button class="btn btn-xs btn-danger" type="button" onclick="dels({$v.uid})" title="删除">
-                      删除
-                    </button> 
+
+                  <td class="hidden-480">
+                
+                    {if condition="$v.type eq 1"}一级会员{else /}二级会员{/if}
+          
+            </td>
+               
+                </tr>
+
+ 
+                {volist name="$v['list']" id="vv"}
+                <tr class="ace-thumbnails">
+              
+                  <td><span class="badge badge-grey">{$vv.uid}</span></td>
+                  <td>{$vv.nickname}</td>
+                  <td>{$vv.phone}</td>
+                  <td>{$vv.company}</td>
+                  <td class="ace-thumbnails hidden-480">
+                    <li>
+                      <img width="80" height="80" alt="150x150" src="{$vv.image}"/>
+                     
+                    </li>
                   </td>
+              
+                  <td class="hidden-480">
+                
+                          {if condition="$vv.level == 1"}公司{elseif condition="$vv.level == 2"}销售经理{else /}入驻酒店{/if}
+                
+                  </td>
+               
+              
+                  <td class="hidden-480">{$vv.time|date="Y-m-d H:i:s",###}</td>
+
+                  <td class="hidden-480">
+                
+                    {if condition="$vv.type eq 1"}一级会员{else /}二级会员{/if}
+          
+            </td>
+               
                 </tr>
                 {/volist}
-                {empty name="list"}<tr><td colspan="11" class="text-center">暂无数据</td></tr>{/empty}
+
+                {/volist}
+                {empty name="res"}<tr><td colspan="11" class="text-center">暂无数据</td></tr>{/empty}
                 </tbody>
 
               </table>
               <div class="text-center">
                 <ul class="pagination" id="result">
-                  {$page}
+              
                 </ul>
               </div>
             </div>
@@ -141,14 +140,7 @@
   <i class="ace-icon fa fa-angle-double-up icon-only bigger-110"></i>
 </a>
 </div><!-- /.main-container -->
-<script>
-    $("#out").click(function(){
 
-      var key="{$keywords}";
-      
-      location.href="__URL__/out/key/"+key;
-    })
-   </script>
 
 <script>
   jQuery(function($) {

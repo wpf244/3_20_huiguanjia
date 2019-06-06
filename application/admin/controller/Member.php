@@ -35,6 +35,35 @@ class Member extends BaseAdmin
         return $this->fetch();
     }
 
+    public function look()
+    {
+        $id=input("id");
+
+        $res=db("user")->where(['status'=>1,'is_delete'=>0,"fid"=>$id])->select();
+  
+        foreach($res as $k => $v){
+            $res[$k]['type']=1;
+            $res[$k]['list']=db("user")->where(['status'=>1,'is_delete'=>0,"fid"=>$v['uid']])->select();
+            
+            if($res[$k]['list']){
+                foreach($res[$k]['list'] as $ks => $vs){
+                    $res[$k]['list'][$ks]['type']=2;
+
+                  
+                }
+             
+            }
+            
+        }
+        
+     //   $lists = array_merge_recursive($res, $list);
+        $this->assign("res",$res);
+
+     
+        
+        return $this->fetch();
+    }
+
     public function out(){
         $key=input("key");
 
