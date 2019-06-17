@@ -9,6 +9,8 @@ class Ment extends BaseAdmin
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
+
+        db("need")->where("look",0)->setField("look",1);
         return $this->fetch();
     }
     public function delete(){

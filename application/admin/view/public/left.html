@@ -59,7 +59,7 @@ $(function(){
       <a href="#" class="dropdown-toggle">
         <i class="menu-icon fa {$c.c_icon}"></i>
         <span class="menu-text"> {$c.c_name} </span>
-
+        
         <b class="arrow fa fa-angle-down"></b>
       </a>
 
@@ -70,9 +70,9 @@ $(function(){
            <?php  $url = $c['c_modul'].'/'.$w['c_modul']; ?>
           <a href="{:url($url)}">
             <i class="menu-icon fa fa-caret-right"></i>
-            {$w.c_name}
+            {$w.c_name}    &nbsp;&nbsp; {if condition="$w.c_name eq '资讯列表' "}<span style="color: red;">{$cou_num}</span>{/if}
           </a>
-
+          
           <b class="arrow"></b>
         </li>
       {/volist}

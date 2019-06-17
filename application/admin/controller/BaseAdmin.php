@@ -51,6 +51,10 @@ class BaseAdmin extends Controller{
         }
         
         $this->logs=new Sever();
+
+        $cou_num=db("need")->where(["look"=>0,"status"=>0])->count();
+
+        $this->assign("cou_num",$cou_num);
         
 
         
