@@ -48,4 +48,14 @@ class Ment extends BaseAdmin
         }
         $this->redirect('index');
     }
+    public function look()
+    {
+        $id=input("id");
+
+        $list=db("need_order")->alias("a")->field("a.*,b.nickname,b.phone,c.username,c.name,c.addr,c.genre")->where("nid",$id)->join("user b","a.uid = b.uid")->join("user_apply c","a.uid=c.u_id")->order("a.id desc")->select();
+
+        $this->assign("list",$list);
+        
+        return $this->fetch();
+    }
 }

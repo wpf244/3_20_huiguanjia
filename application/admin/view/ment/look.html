@@ -22,7 +22,7 @@
             <i class="ace-icon fa fa-home home-icon"></i>
             <a href="{:url('Index/index')}">首页</a>
           </li>
-          <li class="active">资讯列表</li>
+          <li class="active">抢标列表</li>
         </ul><!-- /.breadcrumb -->
 
       </div>
@@ -40,21 +40,14 @@
               <table class="table table-bordered table-hover">
                 <thead>
                 <tr>
-               
-                  <th>ID</th>
-                  <th>会议类型</th>
-                  <th>会议时长</th>
-                  <th>会议时间</th>
-                  <th>会议人数</th>
-                  <th>会议预算</th>
-                  <th>会议需求</th>
-                  <th>会议城市</th>
-                  <th>联系电话</th>
-                  <th>备注</th>
-                  <th>提交时间</th>
-                  <th>抢标人数</th>
-                  <th>抢标列表</th>
-                  <th style="border-right:#ddd solid 1px;">操作</th>
+                  <th>用户昵称</th>
+                  <th>手机号码</th>
+                  <th>酒店名称</th>
+                  <th>法人姓名</th>
+                  <th>酒店地址</th>
+                  <th>酒店类型</th>      
+                  <th>时间</th>
+                
                 </tr>
                 </thead>
                 <tbody>
@@ -63,40 +56,22 @@
                 <tr>
                
                   
-                  <td><span class="badge badge-grey">{$v.id}</span></td>
-                  <td>{$v.type}</td>
-                  <td>{$v.times}</td>
-                  <td>{$v.dates}</td>
-                  <td>{$v.number}</td>
-                  <td>{$v.money}</td>
-                  <td>{$v.ment}</td>
-                  <td>{$v.city}</td>
+                  <td><span class="badge badge-grey">{$v.nickname}</span></td>
                   <td>{$v.phone}</td>
-                  <td>{$v.content}</td>
+                  <td>{$v.name}</td>
+                  <td>{$v.username}</td>
+                  <td>{$v.addr}</td>
+                  <td>{$v.genre}</td>
+                
                   <td>{$v.time|date="Y-m-d H:i:s",###}</td>
-                  <td>{$v.num}</td>
-                  <td>
-                    <a class="btn btn-xs btn-info" href="{:url('Ment/look',array('id'=>$v.id))}">
-                      查看列表
-                    </a>
-                    
-                  </td>
-                  <td>
-                    <button class="btn btn-xs btn-info" type="button" onclick="change({$v['id']})">
-                      已联系
-                    </button>
-                    <button class="btn btn-xs btn-danger" type="button" onclick="dels({$v['id']})" title="删除">
-                      删除
-                      </button>
-                  </td>
+               
+                  
                 </tr>
                 {/volist}
                 </tbody>
               </form>
               </table>
-              <div class="text-center">
-                {$page}
-              </div>
+             
             </div>
             <!-- PAGE CONTENT BEGINS -->
 

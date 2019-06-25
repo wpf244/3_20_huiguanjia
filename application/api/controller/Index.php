@@ -100,8 +100,25 @@ class Index extends BaseApi
     {
         $data=input("post.");
         $data['time']=time();
+        unset($data['formid']);
         $re=db("need")->insert($data);
         if($re){
+
+            $formid=input("formid");
+
+            $page="/pages/invitation/invitation";
+
+            $user=db("user")->where(["status"=>1,"level"=>3])->select();
+
+            $datas['phone']=input("phone");
+            $datas['time']=date("Y/m/d");
+
+            if($user){
+                foreach($user as $v){
+                    $this->send($v['openid'],$formid,$page,$datas);
+                }
+            }
+
             $arr=[
                 'error_code'=>0,
                 'msg'=>'提交成功',
@@ -115,6 +132,119 @@ class Index extends BaseApi
             ];
         }
         echo \json_encode($arr);
+    }
+    public function send($openid,$formid,$page,$datas)
+    {
+        $result=$this->get_token();
+
+        $token = $result['access_token'];
+
+        $template_id=$this->get_template_id($token);
+
+
+
+    //    $datas='{
+    //     "keyword1" => array(
+    //         "value" => '.$datas["phone"].'
+    //     ),
+    //     "keyword2" => array(
+    //         "value" => '.$datas["time"].'
+    //     }';
+     
+        $datas = array(
+                'touser' => $openid, 
+                'template_id' => $template_id, 
+                // 'page' => 'pages/ordermsg/ordermsg?id = ' . $wx_id,//要跳转的页面点击推送消息，可以携带参数，跳转到小程序后显示详细的信息。
+                'page' => $page,//点击推送消息要跳转的页面
+                'form_id' => $formid,
+                'data' => array(
+                    'keyword1' => array(
+                        'value' => $datas['phone'], // 商品名称
+                        'color' => '#173177'
+                    ),
+                    'keyword2' => array(
+                        'value' => $datas['time'], //订单金额
+                        'color' => '#173177'
+                    )
+                
+                )
+        );
+    $post_datas = json_encode($datas);
+
+
+        // $post_datas='{"touser":"'.$openid.'", "template_id":"'. $template_id .'", "page":"'. $page .'", "form_id":"'. $formid .'", "data":"'. $data .'"}';
+
+        $res_url="https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token=".$token;
+
+        $results=$this->httpRequest($res_url,$post_datas,'POST');
+
+    //    var_dump($results);exit;
+        
+    }
+    /**
+    * 获取模板消息id
+    *
+    * @return void
+    */
+    public function get_template_id($token)
+    {
+        $post_data='{"offset":"0", "count":"1"}';
+  
+        $res_url="https://api.weixin.qq.com/cgi-bin/wxopen/template/list?access_token=".$token;
+        $results=$this->httpRequest($res_url,$post_data,'POST');
+
+        $template_id=json_decode($results)->list[0]->template_id;
+
+        return $template_id;
+    }
+     /**
+     * curl函数网站请求封装函数
+     *
+     * @param [type] $url 请求地址
+     * @param string $data 数据
+     * @param string $method 请求方法
+     * @return void
+     */
+     function httpRequest($url, $data='', $method='GET'){
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($curl, CURLOPT_AUTOREFERER, 1);
+        if($method=='POST')
+        {
+            curl_setopt($curl, CURLOPT_POST, 1);
+            if ($data != '')
+            {
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+            }
+        }
+     
+        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+        curl_setopt($curl, CURLOPT_HEADER, 0);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        $result = curl_exec($curl);
+        curl_close($curl);
+        return $result;
+    }
+    /**
+    * 获取token
+    *
+    * @return void
+    */
+    public function get_token()
+    {
+        $payment=db("payment")->where("id",1)->find();
+        $appid = $payment['appid'];
+        $secret = $payment['appsecret'];
+
+        $url="https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=$appid&secret=$secret";
+
+        $results=json_decode(file_get_contents($url),true);
+
+        return $results;
     }
 
 
