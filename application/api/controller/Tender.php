@@ -37,6 +37,8 @@ class Tender extends BaseHome
 
         $re=db("need")->where(["id"=>$id,"status"=>0])->find();
 
+        $re['lister']=db("need_order")->alias("a")->field("b.company")->where(["nid"=>$id])->join("user b","a.uid=b.uid")->select();
+
         if($re){
             $arr=[
                 'error_code'=>0,

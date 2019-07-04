@@ -108,7 +108,7 @@ class Index extends BaseApi
 
             $page="/pages/invitation/invitation";
 
-            $user=db("user")->where(["status"=>1,"level"=>3])->select();
+            $user=db("user")->where(["status"=>1,"level"=>["in",[2,3]]])->select();
 
             $datas['phone']=input("phone");
             $datas['time']=date("Y/m/d");
