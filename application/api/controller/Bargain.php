@@ -342,7 +342,7 @@ class Bargain extends BaseHome
                 $re['date']=$end_time;
             }
 
-            $res=db("bargain_log")->where("bid",$id)->select();
+            $res=db("bargain_log")->alias("a")->field("a.price,b.nickname,b.image")->where("bid",$id)->join("user b","a.uid=b.uid")->select();
 
           
             $scale=\intval($re['already_price']/($re['price']-$re['floor_price'])*100);
@@ -350,7 +350,11 @@ class Bargain extends BaseHome
             $arr=[
                 'error_code'=>0,
                 'msg'=>'获取成功',
-                'data'=>[]
+                'data'=>[
+                   'goods'=>$re,
+                   'list'=>$res,
+                   'scale'=>$scale,
+                ]
             ];
 
 
@@ -364,6 +368,107 @@ class Bargain extends BaseHome
         return json($arr);
 
      
+    }
+     /**
+    * 历史记录
+    *
+    * @return void
+    */
+    public function history()
+    {
+        $uid=Request::instance()->header("uid");
+        //砍价成功
+        $rec=db("bargain")->where(["status"=>1,"pay_status"=>0,"g_status"=>0,"uid"=>$uid])->order(["id desc"])->select();
+
+
+        //砍价失败
+
+        $res=db("bargain")->where(["status"=>2,"g_status"=>0,"uid"=>$uid])->order(["id desc"])->select();
+
+        //已过期
+
+        $reg=db("bargain")->where(["g_status"=>1,"uid"=>$uid])->order(["id desc"])->select();
+
+        
+
+        $arr=[
+            'error_code'=>0,
+            'msg'=>'获取成功',
+            'data'=>[
+                'rec'=>$rec,
+                'res'=>$res,
+                'reg'=>$reg,
+            ]
+        ];
+    
+        return json($arr);
+    }
+     /**
+    * 生产订单
+    *
+    * @return void
+    */
+    public function sdd()
+    {
+        
+        $uid=Request::instance()->header("uid");
+        
+        $id=input('id');
+
+        $re=db("bargain")->where("id",$id)->find();
+
+        $gid=$re['gid'];
+     
+        $ob=db("bargain_dd");
+        $old_dd=db("bargain_dd")->where(["gid"=>$gid,"uid"=>$uid,"status"=>0,"bid"=>$id])->find();
+        if($old_dd){
+            $ob->where("id",$old_dd['id'])->delete();
+         
+        }
+        $good=db("bargain_goods")->where("id",$gid)->find();
+     
+        $arr=array();
+        $arr['gid']=$gid;
+        $arr['uid']=$uid;
+        $arr['bid']=$id;
+        $arr['goods_price']=$re['price'];
+        if($re['surplus_price'] == 0){
+            $arr['price']=0.01;
+        }else{
+            $arr['price']=$re['surplus_price'];
+        }
+        
+        $arr['name']=$good['name'];
+       
+        $arr['image']=$good['image'];
+        $arr['code']="CK-".uniqid();
+       
+        $arr['time']=time();
+      
+        
+        $re=$ob->insert($arr);
+        
+        $dids = db('bargain_dd')->getLastInsID();
+        if($dids){
+            $arr=[
+                'error_code'=>0,
+                'msg'=>'订单生产成功',
+                'data'=>[
+                    'did'=>$dids
+                ]
+            ];
+        
+           
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'msg'=>'订单生产失败',
+                'data'=>''
+            ];
+        
+            
+        }
+        return json($arr);
     }
 
 

@@ -181,7 +181,9 @@ class Dd extends BaseAdmin
         $id=\input('id');
         $re=db("order")->where("id=$id")->find();
         if($re){
-            $del=db("order")->where("id=$id")->setField("is_delete",-1);
+            $del=db("order")->where("id=$id")->delete();
+
+           
            
             $this->redirect("dai_dd");
         }else{
@@ -193,7 +195,7 @@ class Dd extends BaseAdmin
         $id=\input('id');
         $re=db("order")->where("id=$id")->find();
         if($re){
-            $del=db("order")->where("id=$id")->setField("is_delete",-1);
+            $del=db("order")->where("id=$id")->delete();
            
             $this->redirect("fa_dd");
         }else{

@@ -10,14 +10,14 @@ Loader::import('WxPay.WxPay', EXTEND_PATH, '.Api.php');
 Loader::import('WxPay.WxPay', EXTEND_PATH, '.JsApiPay.php');
 class Pay extends Controller
 {
-    public function getopenid()
+    public function getopenid($data)
     {
         $code=\input('code');
-        $appid="wxcde9f11cf93da5ba";
-        $secret="18bayingshangmaohuizhongchuangda";
+        $appid=$data['appid'];
+        $secret=$data['appsecret'];
         $url="https://api.weixin.qq.com/sns/jscode2session?appid=".$appid."&secret=".$secret."&js_code=".$code."&grant_type=authorization_code";
         $results=json_decode(file_get_contents($url),true);
-        \var_dump($results);exit;
+        // \var_dump($results);exit;
         $openid=$results['openid'];
         return $openid;
 
@@ -44,7 +44,7 @@ class Pay extends Controller
         $input->SetBody("$name");
         $input->SetOut_trade_no("$order");
         $input->SetTotal_fee("$money");
-        $input->SetNotify_url("https://huiguanjia.dd371.com/Api/Pay/notify/");
+        $input->SetNotify_url("https://www.huijitong.cn/Api/Pay/notify/");
         $input->SetTrade_type("JSAPI");
         $input->SetTime_start(date("YmdHis"));
         $input->SetTime_expire(date("YmdHis", time() + 600));
@@ -61,6 +61,191 @@ class Pay extends Controller
 //             'data'=>$jsApiParameters
 //         ];
         echo $jsApiParameters;
+    }
+    public function pay_bargain()
+    {
+        $id=input("did");
+
+        $re=db("bargain_dd")->where("id",$id)->find();
+
+        $order=$re['code'];
+
+        $money=($re['price']*100);
+
+
+        $data=db("payment")->where("id",1)->find();
+
+        $uid=$re['uid'];
+
+        $user=db("user")->where("uid",$uid)->find();
+
+        $openid=$user['openid'];
+
+        if(empty($openid)){
+            $openid=$this->getopenid($data);
+            db("user")->where("uid",$uid)->setField("openid",$openid);
+        }
+        
+        
+        $input = new \WxPayUnifiedOrder();
+        $input->SetBody("商品");
+        $input->SetOut_trade_no("$order");
+        $input->SetTotal_fee("$money");
+        $input->SetNotify_url("https://www.huijitong.cn/Api/Pay/notify_bargain/");
+        $input->SetTrade_type("JSAPI");
+        $input->SetTime_start(date("YmdHis"));
+        $input->SetTime_expire(date("YmdHis", time() + 600));
+        //     由小程序端传给服务端
+        $input->SetOpenid($openid);
+        //     向微信统一下单，并返回order，它是一个array数组
+        $order = \WxPayApi::unifiedOrder($input,$data);
+        //     json化返回给小程序端
+        $tools=new \JsApiPay();
+        $jsApiParameters = $tools->GetJsApiParameters($order,$data);
+        
+//         $arr=[
+//             'error_code'=>0,
+//             'data'=>$jsApiParameters
+//         ];
+        echo $jsApiParameters;
+    }
+    public function notify_bargain()
+    {
+        
+        //获取返回的xml
+        $testxml  = file_get_contents("php://input");
+        //将xml转化为json格式
+        $jsonxml = json_encode(simplexml_load_string($testxml, 'SimpleXMLElement', LIBXML_NOCDATA));
+        
+        //转成数组
+        $result = json_decode($jsonxml, true);
+        
+        if($result){
+            //如果成功返回了
+            if($result['return_code'] == 'SUCCESS'){
+                //进行改变订单状态等操作。。。。
+                $order_code= $result['out_trade_no'];
+                $re=db("bargain_dd")->where("code",$order_code)->find();
+                $id=$re['id'];
+                if($re['status'] == 0){
+                    $data['fu_time']=time();
+                    $data['status']=1;
+                    $changestatus=db("bargain_dd")->where("id=$id")->update($data);
+                    if($changestatus){
+                        $bid=$re['bid'];
+
+                        db("bargain")->where("id",$bid)->setField("pay_status",1);
+                        
+                    }
+                }
+                
+            }
+        }
+        
+    }
+    public function pay_assemble()
+    {
+        $id=input("did");
+
+        $re=db("assemble_dd")->where("id",$id)->find();
+
+        $this->assign("re",$re);
+
+        $order=$re['code'];
+        $money=($re['price']*100);
+
+        $data=db("payment")->where("id",1)->find();
+
+        $uid=$re['uid'];
+
+        $user=db("user")->where("uid",$uid)->find();
+
+        $openid=$user['openid'];
+
+        if(empty($openid)){
+
+            $openid=$this->getopenid($data);
+
+            db("user")->where("uid",$uid)->setField("openid",$openid);
+        }
+
+        $input = new \WxPayUnifiedOrder();
+        $input->SetBody("商品");
+        $input->SetOut_trade_no("$order");
+        $input->SetTotal_fee("$money");
+        $input->SetNotify_url("https://www.huijitong.cn/Api/Pay/notify_assemble/");
+        $input->SetTrade_type("JSAPI");
+        $input->SetTime_start(date("YmdHis"));
+        $input->SetTime_expire(date("YmdHis", time() + 600));
+        //     由小程序端传给服务端
+        $input->SetOpenid($openid);
+        //     向微信统一下单，并返回order，它是一个array数组
+        $order = \WxPayApi::unifiedOrder($input,$data);
+        //     json化返回给小程序端
+        $tools=new \JsApiPay();
+        $jsApiParameters = $tools->GetJsApiParameters($order,$data);
+
+        echo $jsApiParameters;
+    }
+    public function notify_assemble()
+    {
+        
+        //获取返回的xml
+        $testxml  = file_get_contents("php://input");
+        //将xml转化为json格式
+        $jsonxml = json_encode(simplexml_load_string($testxml, 'SimpleXMLElement', LIBXML_NOCDATA));
+        
+        //转成数组
+        $result = json_decode($jsonxml, true);
+        
+        if($result){
+            //如果成功返回了
+            if($result['return_code'] == 'SUCCESS'){
+                //进行改变订单状态等操作。。。。
+                $order_code= $result['out_trade_no'];
+                $re=db("assemble_dd")->where("code",$order_code)->find();
+                $id=$re['id'];
+                if($re['status'] == 0){
+                    $data['fu_time']=time();
+                    $data['status']=1;
+                    $changestatus=db("assemble_dd")->where("id=$id")->update($data);
+                    if($changestatus){
+                        $bid=$re['a_id'];
+
+                        $assemble=db("assemble")->where("id",$bid)->find();
+
+                        if($assemble){
+                            if($assemble['status'] == 0){
+                                db("assemble")->where("id",$bid)->setField("status",1);
+                            }
+                            $num=$assemble['number']-$assemble['num'];
+                            
+                            if($re['lid'] != 0){
+                                db("assemble_log")->where("id",$re['lid'])->setField("status",1);
+                            }
+                            if($num <= 1){
+                                db("assemble")->where("id",$bid)->setInc("num",1);
+                                db("assemble")->where("id",$bid)->setField("status",2);
+                                $res=db("assemble_dd")->where(["a_id"=>$bid,"status"=>1])->select();
+                                if($res){
+                                    db("assemble_dd")->where(["a_id"=>$bid,"status"=>1])->setField("status",2);
+                                }
+                                // if($re['lid'] != 0){
+                                //     db("assemble")->where("id",$re['lid'])->setField("status",2);
+                                // }
+                            }else{
+                                db("assemble")->where("id",$bid)->setInc("num",1);
+
+                            }
+                        }
+
+                        
+                    }
+                }
+                
+            }
+        }
+        
     }
     public function notify()
     {
